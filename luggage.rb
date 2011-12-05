@@ -1,6 +1,7 @@
 require 'camping'
 require 'camping/ar'
 require 'camping/session'
+require 'bcrypt'
 
 Camping.goes :Luggage
 
