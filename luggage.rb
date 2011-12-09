@@ -1,7 +1,12 @@
 require 'camping'
 require 'camping/ar'
 require 'camping/session'
+
+#
 require 'bcrypt'
+require 'fileutils'
+
+
 
 Camping.goes :Luggage
 
@@ -19,6 +24,7 @@ module Luggage
           t.string   :name
           t.string   :path
           t.string   :filetype
+          t.int      :views
           t.timestamps
         end
       end
@@ -29,12 +35,10 @@ module Luggage
     end
   end
 
-
   module Controllers
     class Index
       def get
-        @time = Time.now
-        render :sundial
+        render :index
       end
     end
 
@@ -59,14 +63,31 @@ module Luggage
       end
     end
 
-    class Files
-      def get
-        require_login!
-        render :files
+    class Upload
+      def post
+        @input = input.upload
+
+        #this reads our file - need to copy file to permanent location
+        #FileUtils.cp input.upload[:tempfile].read
+        #generate uniqe filename
+        #filename will be in this structure:
+        #uniqIdentifier-orginialName.ext
+        #copy file to LUGGAGE_STORE_DIR
+        #create new item for database
+        #returns json if ajax: true
+        #else redirect to Open/filename
+        render :view_file
       end
     end
 
-    class FilesX
+    class Open
+      def get
+        #require_login!
+        render :list_files
+      end
+    end
+
+    class OpenX
       def get(everything)
         render :view_file
       end
@@ -83,8 +104,21 @@ module Luggage
       end
     end
 
-    def sundial
-      p "The current time is #{@time}"
+
+    def uploader
+      div :class => "uploader" do
+        form :action => "/upload/", :method => "post", :enctype => "form/multipart" do
+          input :type => 'file', :name => 'upload'
+          input :type => 'submit'
+        end
+      end
+    end
+
+    def index
+        uploader()
+      p do
+        "We should so the file list if you're logged in, otherwise let us show something different, not sure what yet"
+      end
     end
 
     def login
@@ -95,12 +129,15 @@ module Luggage
       p "Poof you're logged out"
     end
     
-    def files
+    def list_files
       p "there will be files here"
     end
 
     def view_file
-      p "this is your specific file view"
+      p do
+        "this is your specific file view"
+        @input
+      end
     end
   end
 
