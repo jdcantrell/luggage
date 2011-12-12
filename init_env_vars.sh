@@ -1,0 +1,10 @@
+#!/bin/bash
+
+LUGGAGE_USERNAME="Replace Me"
+export LUGGAGE_USERNAME
+
+LUGGAGE_HASH="Replace Me"
+export LUGGAGE_HASH
+
+LUGGAGE_UPLOAD_PATH="Replace Me"
+export LUGGAGE_UPLOAD_PATH
