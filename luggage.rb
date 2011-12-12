@@ -2,29 +2,28 @@ require 'camping'
 require 'camping/ar'
 require 'camping/session'
 
-#
+#Custom requirements
 require 'bcrypt'
 require 'fileutils'
-
-
+require 'logger'
 
 Camping.goes :Luggage
 
 module Luggage
   include Camping::Session
 
+
   module Models
-    class Item < Base
-    end
+    class Item < Base;end
 
     class BasicFields < V 1.0
       def self.up
-        create_table :luggage_items do |t|
+        create_table :luggage_items, :force => true do |t|
           t.string   :key
           t.string   :name
           t.string   :path
           t.string   :filetype
-          t.int      :views
+          t.integer  :views
           t.timestamps
         end
       end
@@ -65,17 +64,22 @@ module Luggage
 
     class Upload
       def post
-        @input = input.upload
+        temp = input.upload[:tempfile].path()
 
-        #this reads our file - need to copy file to permanent location
-        #FileUtils.cp input.upload[:tempfile].read
-        #generate uniqe filename
-        #filename will be in this structure:
-        #uniqIdentifier-orginialName.ext
-        #copy file to LUGGAGE_STORE_DIR
-        #create new item for database
+        #TODO: something different and only if this is really needed
+        #new key every second, good until 2038-12-24
+        key = Time.now.to_i.to_s(36)
+        filename = input.upload[:filename]
+        extension = File.extname(filename)
+        dir = ENV['LUGGAGE_UPLOAD_PATH']
+        path = "#{dir}/#{key}-#{filename}"
+        FileUtils.cp temp, path
+        item = Item.create :key => key, :name => filename, :path => path, :filetype => extension, :views => 0
+        @input = path
         #returns json if ajax: true
+
         #else redirect to Open/filename
+        #TODO: Redirect!
         render :view_file
       end
     end
@@ -88,8 +92,14 @@ module Luggage
     end
 
     class OpenX
-      def get(everything)
-        render :view_file
+      
+      def get(key)
+        if key.index('.')
+ActiveRecord::Base.logger = Logger.new(STDOUT)
+          @item = Item.order('id DESC').where( :name => key).first
+
+          render :view_file
+        end
       end
     end
   end
@@ -135,8 +145,7 @@ module Luggage
 
     def view_file
       p do
-        "this is your specific file view"
-        @input
+        @item.path
       end
     end
   end
@@ -154,4 +163,8 @@ module Luggage
     end
   end
 
+end
+
+def Luggage.create
+  Luggage::Models.create_schema :assume => (Luggage::Models::Item.table_exists? ? 1.0 : 0.0)
 end
