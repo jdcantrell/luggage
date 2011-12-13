@@ -7,6 +7,9 @@ require 'bcrypt'
 require 'fileutils'
 require 'logger'
 
+#Here are our custom displays
+require './luggage_displays/base'
+
 Camping.goes :Luggage
 
 module Luggage
@@ -24,6 +27,7 @@ module Luggage
           t.string   :path
           t.string   :filetype
           t.integer  :views
+          t.string   :handler
           t.timestamps
         end
       end
@@ -66,16 +70,39 @@ module Luggage
       def post
         temp = input.upload[:tempfile].path()
 
+        #Setup item details
+
         #TODO: something different and only if this is really needed
         #new key every second, good until 2038-12-24
         key = Time.now.to_i.to_s(36)
+
         filename = input.upload[:filename]
         extension = File.extname(filename)
         dir = ENV['LUGGAGE_UPLOAD_PATH']
         path = "#{dir}/#{key}-#{filename}"
         FileUtils.cp temp, path
-        item = Item.create :key => key, :name => filename, :path => path, :filetype => extension, :views => 0
-        @input = path
+
+        #find an appropriate handler
+        handlerClass = nil
+        classes = LuggageDisplays.constants.collect{ |c| LuggageDisplays.const_get(c) }
+        puts "Looking for handler for #{extension}"
+
+        classes.each do |c|
+          if c::HANDLES[extension] != nil
+            handlerClass = c
+          end
+        end
+
+        if handlerClass == nil
+          handlerClass = LuggageDisplays::Default
+        end
+
+        item = Item.create :key => key, :name => filename, :path => path, :filetype => extension, :views => 0, :handler => handlerClass.name
+
+        #instantiate handler and process
+        handler = handlerClass.new
+        handler.process item
+        @item = item
         #returns json if ajax: true
 
         #else redirect to Open/filename
@@ -145,6 +172,7 @@ ActiveRecord::Base.logger = Logger.new(STDOUT)
 
     def view_file
       p do
+        @item.handler
         @item.path
       end
     end
