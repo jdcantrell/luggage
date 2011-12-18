@@ -21,15 +21,19 @@ module LuggageDisplays
   class Images
     HANDLES  = {".jpg" => 1, ".png" => 1}
 
+    def initialize(item)
+      @item = item
+    end
+
     def process(item)
       #things we need to do immediately after upload
       #suche as resize/convert to jpg, etc
     end
 
-    def display(item)
+    def display
       #return any html needed for displaying this
       #filetype
-      img :src => filename
+      p @item.path
     end
   end
 
@@ -43,7 +47,9 @@ module LuggageDisplays
 
     def display(item)
       #return any html needed for displaying this
-      #filetype
+      #maybe have an overall class that can create two tabs for a
+      #subclass such as this, one tab will be the rendered view
+      #the other tab will be the source
     end
   end
 
