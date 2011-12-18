@@ -41,6 +41,7 @@ module Luggage
   module Controllers
     class Index
       def get
+        @files = Item.all(:order => 'updated_at DESC')
         render :index
       end
     end
@@ -85,7 +86,6 @@ module Luggage
         #find an appropriate handler
         handlerClass = nil
         classes = LuggageDisplays.constants.collect{ |c| LuggageDisplays.const_get(c) }
-        puts "Looking for handler for #{extension}"
 
         classes.each do |c|
           if c::HANDLES[extension] != nil
@@ -100,20 +100,20 @@ module Luggage
         item = Item.create :key => key, :name => filename, :path => path, :filetype => extension, :views => 0, :handler => handlerClass.name
 
         #instantiate handler and process
-        handler = handlerClass.new
-        handler.process item
-        @item = item
+        handler = handlerClass.new(item)
+        handler.process
         #returns json if ajax: true
 
         #else redirect to Open/filename
         #TODO: Redirect!
-        render :view_file
+        redirect OpenX, item.name
       end
     end
 
     class Open
       def get
         #require_login!
+        @files = Item.all(:order => 'updated_at DESC')
         render :list_files
       end
     end
@@ -121,25 +121,28 @@ module Luggage
     class OpenX
       
       def get(key)
-        if key.index('.')
           #debug
           ActiveRecord::Base.logger = Logger.new(STDOUT)
+        if key.index('.')
 
           #lookup item by name
           item = Item.order('id DESC').where( :name => key).first
-
-          #get handler class
-          handlerClassName = item.handler.split('::')[1]
-          handlerClass =  LuggageDisplays.const_get(handlerClassName)
-
-          #create handler and render
-          if handlerClass == nil
-            handlerClass = LuggageDisplays::Default
-          end
-
-          @handler = handlerClass.new(item)
-          render @handler.display
+        else
+          item = Item.order('id DESC').where( :key => key).first
         end
+
+        #get handler class
+        handlerClassName = item.handler.split('::')[1]
+        handlerClass =  LuggageDisplays.const_get(handlerClassName)
+
+        #create handler and render
+        if handlerClass == nil
+          handlerClass = LuggageDisplays::Default
+        end
+
+        @handler = handlerClass.new(item)
+        @handlerHTML = @handler.get_html
+        render :view_file
       end
     end
   end
@@ -168,6 +171,7 @@ module Luggage
       p do
         "We should show the file list if you're logged in, otherwise let us show something different, not sure what yet"
       end
+      list_files
     end
 
     def login
@@ -179,12 +183,21 @@ module Luggage
     end
     
     def list_files
-      p "there will be files here"
+      if @files.empty?
+        h2 "Nothing uploaded!"
+      else
+        @files.each do |file|
+          url = R(OpenX, file.key)
+          li do
+            a file.name, :href => url
+          end
+        end
+      end
     end
 
     def view_file
-      p do
-        @handler.display @item
+      div.content do
+        @handlerHTML
       end
     end
   end
