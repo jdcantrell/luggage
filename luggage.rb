@@ -122,10 +122,23 @@ module Luggage
       
       def get(key)
         if key.index('.')
-ActiveRecord::Base.logger = Logger.new(STDOUT)
-          @item = Item.order('id DESC').where( :name => key).first
+          #debug
+          ActiveRecord::Base.logger = Logger.new(STDOUT)
 
-          render :view_file
+          #lookup item by name
+          item = Item.order('id DESC').where( :name => key).first
+
+          #get handler class
+          handlerClassName = item.handler.split('::')[1]
+          handlerClass =  LuggageDisplays.const_get(handlerClassName)
+
+          #create handler and render
+          if handlerClass == nil
+            handlerClass = LuggageDisplays::Default
+          end
+
+          @handler = handlerClass.new(item)
+          render @handler.display
         end
       end
     end
@@ -141,7 +154,6 @@ ActiveRecord::Base.logger = Logger.new(STDOUT)
       end
     end
 
-
     def uploader
       div :class => "uploader" do
         form :action => "/upload/", :method => "post", :enctype => "form/multipart" do
@@ -152,9 +164,9 @@ ActiveRecord::Base.logger = Logger.new(STDOUT)
     end
 
     def index
-        uploader()
+      uploader()
       p do
-        "We should so the file list if you're logged in, otherwise let us show something different, not sure what yet"
+        "We should show the file list if you're logged in, otherwise let us show something different, not sure what yet"
       end
     end
 
@@ -172,8 +184,7 @@ ActiveRecord::Base.logger = Logger.new(STDOUT)
 
     def view_file
       p do
-        @item.handler
-        @item.path
+        @handler.display @item
       end
     end
   end
