@@ -1,70 +1,61 @@
-module LuggageDisplays
+require 'markaby'
 
+module LuggageDisplays
   class Default
     HANDLES = {}
-
-    def process(item)
-      #no processing needed for the default case
-      #since we'll only give them a download link
-    end
-
-    def display(item)
-      p do
-        "We currently have no fancy way of displaying this file, so here is a"
-        a :href => item.path do
-          "link"
-        end
-      end
-    end
-  end
-
-  class Images
-    HANDLES  = {".jpg" => 1, ".png" => 1}
 
     def initialize(item)
       @item = item
     end
 
-    def process(item)
-      #things we need to do immediately after upload
-      #suche as resize/convert to jpg, etc
+    def get_web_path(path)
+      path.sub( ENV['LUGGAGE_UPLOAD_PATH'], ENV['LUGGAGE_STATIC_URL'])
     end
 
-    def display
-      #return any html needed for displaying this
-      #filetype
-      p @item.path
+    def process
+      #no processing needed for the default case
+      #since we'll only give them a download link
+    end
+
+    def generate_html(item)
+      @markaby.p do
+        span "You can download "
+        b "#{item.name} " 
+        a "right here", :href => item.path
+        span "."
+
+      end
+    end
+
+    def get_html
+      @markaby = Markaby::Builder.new
+      #We pass item in here, because once we're inside the markaby
+      #object we no longer are in our object, so our class vars need to
+      #be local vars for easy access
+      generate_html @item
+      @markaby.to_s
     end
   end
 
-  class Markdown
+  class Images < Default
+    HANDLES  = {".jpg" => 1, ".png" => 1}
+
+    def generate_html(item)
+      img_src = get_web_path(item.path)
+
+      @markaby.div.center_modal do
+        img :src => img_src
+      end
+    end
+  end
+
+  
+  class Markdown < Default
     HANDLES  = {".md" => 1, ".markdown" => 1}
-
-    def process(item)
-      #things we need to do immediately after upload
-      #such as resize/convert to jpg, etc
-    end
-
-    def display(item)
-      #return any html needed for displaying this
-      #maybe have an overall class that can create two tabs for a
-      #subclass such as this, one tab will be the rendered view
-      #the other tab will be the source
-    end
   end
 
-  class Html
+  class Html < Default
     HANDLES  = {".html" => 1, ".txt" => 1}
-
-    def process(item)
-      #things we need to do immediately after upload
-      #such as resize/convert to jpg, etc
-    end
-
-    def display(item)
-      #return any html needed for displaying this
-      #filetype
-    end
   end
 
 end
