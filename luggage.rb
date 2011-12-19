@@ -142,6 +142,11 @@ module Luggage
 
         @handler = handlerClass.new(item)
         @handlerHTML = @handler.get_html
+
+        #set up nav links
+        @nav_links = [
+          { "text" => "Direct Link", "href" => @handler.get_direct_link },
+        ]
         render :view_file
       end
     end
@@ -152,26 +157,58 @@ module Luggage
       html do
         head do
           title { "Luggage" }
+          link :rel => "stylesheet", :href =>"http://twitter.github.com/bootstrap/1.4.0/bootstrap.min.css"
         end
-        body {self << yield }
+        body :style => "padding-top:60px" do
+          topbar
+          self << yield 
+        end
+      end
+    end
+
+    def topbar
+      div.topbar do
+        div :class => "topbar-inner" do
+          div.container do
+            a.brand "Luggage", :href => '/'
+            ul.nav do
+              if @nav_links == nil
+              else
+                @nav_links.each do |link|
+                  li { a link['text'], :href => link['href'] }
+                end
+              end
+            end
+          end
+        end
       end
     end
 
     def uploader
       div :class => "uploader" do
-        form :action => "/upload/", :method => "post", :enctype => "form/multipart" do
-          input :type => 'file', :name => 'upload'
-          input :type => 'submit'
+        div.row
+          div :class => "page-header" do
+            h1 "Share something new"
+          end
+          div.span16 do
+          form :action => "/upload/", :method => "post", :enctype => "form/multipart" do
+            div.clearfix do
+              label "File Input", :for => "upload"
+              div.input do
+                input :type => 'file', :name => 'upload'
+                input :value => "Share File" ,:type => 'submit', :class => 'btn primary'
+              end
+            end
+          end
         end
       end
     end
 
     def index
-      uploader()
-      p do
-        "We should show the file list if you're logged in, otherwise let us show something different, not sure what yet"
+      div.container do
+        uploader
+        list_files
       end
-      list_files
     end
 
     def login
@@ -186,10 +223,30 @@ module Luggage
       if @files.empty?
         h2 "Nothing uploaded!"
       else
-        @files.each do |file|
-          url = R(OpenX, file.key)
-          li do
-            a file.name, :href => url
+        div.row do
+          div :class => "page-header" do
+            h1 "Your previously shared files"
+          end
+          div.span16 do
+            table do
+              thead do
+                tr do
+                  th "File Name"
+                  th "Views"
+                  th "Uploaded On"
+                end
+              end
+              tbody do
+                @files.each do |file|
+                  url = R(OpenX, file.key)
+                  tr do
+                    td { a file.name, :href => url }
+                    td file.views
+                    td file.created_at
+                  end
+                end
+              end
+            end
           end
         end
       end
