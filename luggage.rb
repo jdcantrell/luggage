@@ -11,7 +11,7 @@ require 'yaml'
 require 'logger'
 
 #Here are our custom displays
-require './luggage_displays/base'
+require './lib/luggage_displays/base'
 
 Camping.goes :Luggage
 
