@@ -24,8 +24,8 @@ Here is the quick and dirty way to get going:
 
 Once you have done that download or clone the luggage repository and
 fire up your vim (or whatever poor excuse for an editor you're using)
-and modify .init\_env\_vars.sh to any reasonable value you can think of.
-LUGGAGE\_HASH is your bcrypted password (TODO: demonstrate this further)
+and modify config.yml to any reasonable value you can think of.
+password_hash is your bcrypted password (TODO: demonstrate this further)
 
 
 #Okay how do we do it?
@@ -46,10 +46,10 @@ matching the given filename.
 
 I opted to not make this app multi-user, instead going for a single-user
 web app. Which, turns out, is a little bit of a strange concept. This is
-the reason why you setup your username and password in environment
-variables. So I recommend you be smart about that, if your server is
-accessed by anyone else they will be able to get that username and hash,
-for whatever that is worth to them. 
+the reason why you store your username and password in the yaml file. So
+I recommend you be smart about that, if your server is accessed by
+anyone else they will be able to get that username and hash if they can
+read luggage's config file, for whatever that is worth to them. 
 
 #Roadmap
 * make sure all controllers are working
