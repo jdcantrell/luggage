@@ -1,0 +1,4 @@
+username: 'test'
+password_hash: 'change me!'
+upload_path: '/path/to/upload'
+static_url: 'http://static.example.net'
