@@ -9,7 +9,7 @@ module LuggageDisplays
     end
 
     def get_web_path(path)
-      path.sub( ENV['LUGGAGE_UPLOAD_PATH'], ENV['LUGGAGE_STATIC_URL'])
+      path.sub( $config['upload_path'], $config['static_url'])
     end
 
     def process

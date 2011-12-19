@@ -1,3 +1,4 @@
+#Our Campings items
 require 'camping'
 require 'camping/ar'
 require 'camping/session'
@@ -5,12 +6,16 @@ require 'camping/session'
 #Custom requirements
 require 'bcrypt'
 require 'fileutils'
+require 'yaml'
+#TODO: Remove logger
 require 'logger'
 
 #Here are our custom displays
 require './luggage_displays/base'
 
 Camping.goes :Luggage
+
+$config = YAML::load_file('config.yml') 
 
 module Luggage
   include Camping::Session
@@ -53,8 +58,8 @@ module Luggage
 
       def post
         #TODO: make this do something useful
-        @password = Password.new(ENV['LUGGAGE_HASH'])
-        if ENV['LUGGAGE_USER'] == input.username and @password == input.password
+        @password = Password.new($config['password_hash'])
+        if $config['username'] == input.username and @password == input.password
           @state.user_id = 1
         end
       end
@@ -79,7 +84,7 @@ module Luggage
 
         filename = input.upload[:filename]
         extension = File.extname(filename)
-        dir = ENV['LUGGAGE_UPLOAD_PATH']
+        dir = $config['upload_path']
         path = "#{dir}/#{key}-#{filename}"
         FileUtils.cp temp, path
 
