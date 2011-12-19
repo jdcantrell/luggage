@@ -17,6 +17,10 @@ module LuggageDisplays
       #since we'll only give them a download link
     end
 
+    def get_direct_link
+      get_web_path(@item.path)
+    end
+
     def generate_html(item)
       @markaby.p do
         span "You can download "
@@ -43,7 +47,7 @@ module LuggageDisplays
     def generate_html(item)
       img_src = get_web_path(item.path)
 
-      @markaby.div.center_modal do
+      @markaby.div :style => "text-align:center" do
         img :src => img_src
       end
     end
