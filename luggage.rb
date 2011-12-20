@@ -9,8 +9,6 @@ require 'camping/session'
 require 'bcrypt'
 require 'fileutils'
 require 'yaml'
-#TODO: Remove logger
-require 'logger'
 
 #Here are our custom displays
 require './lib/luggage_displays/base'
@@ -48,8 +46,7 @@ module Luggage
   module Controllers
     class Index
       def get
-        Item.select('*')
-        @files = Item.order('updated_at DESC').limit(20)
+        @files = Item.order('created_at DESC').limit(20)
         render :index
       end
     end
@@ -130,8 +127,6 @@ module Luggage
     class OpenX
       
       def get(key)
-          #debug
-          ActiveRecord::Base.logger = Logger.new(STDOUT)
         if key.index('.')
 
           #lookup item by name
@@ -141,6 +136,7 @@ module Luggage
         end
 
         @item.views += 1
+        @item.save
 
         #get handler class
         handlerClassName = @item.handler.split('::')[1]
