@@ -1,0 +1,28 @@
+
+.image {
+  text-align:center;
+}
+
+.image img {
+  width: 95%;
+}
+
+.image img.full {
+  width: auto;
+}
+
+.highlighttable td {
+  padding: 0;
+  border:none;
+}
+
+.linenos pre {
+  border-right: none;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.code pre {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
