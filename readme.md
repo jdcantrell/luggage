@@ -52,13 +52,10 @@ anyone else they will be able to get that username and hash if they can
 read luggage's config file, for whatever that is worth to them. 
 
 #Roadmap
-* make sure all controllers are working
-* Add paging to the front page, show last 20 items
-* Update the views field when items are viewed
+* Add pagination to the front page
 * File.API
 * Make Share button change to uploading...
 * Validate on upload!
 * Allow users to edit file data (including key, handler, and file name?)
 * Allow users to remove uploaded files
-* implement login stuff
 * prevent csrf (just a random token on our forms correct?)
