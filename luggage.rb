@@ -48,21 +48,31 @@ module Luggage
   module Controllers
     class Index
       def get
-        @files = Item.all(:order => 'updated_at DESC')
+        Item.select('*')
+        @files = Item.order('updated_at DESC').limit(20)
         render :index
       end
     end
 
     class Login
       def get
-        render :login
+        if logged_in?
+          redirect Index
+        else
+          @login_error = false
+          render :login
+        end
       end
 
       def post
         #TODO: make this do something useful
-        @password = Password.new($config['password_hash'])
+        @password = BCrypt::Password.new($config['password_hash'])
         if $config['username'] == input.username and @password == input.password
           @state.user_id = 1
+          redirect Index
+        else
+          @login_error = true
+          render :login
         end
       end
     end 
@@ -125,13 +135,15 @@ module Luggage
         if key.index('.')
 
           #lookup item by name
-          item = Item.order('id DESC').where( :name => key).first
+          @item = Item.order('id DESC').where( :name => key).first
         else
-          item = Item.order('id DESC').where( :key => key).first
+          @item = Item.order('id DESC').where( :key => key).first
         end
 
+        @item.views += 1
+
         #get handler class
-        handlerClassName = item.handler.split('::')[1]
+        handlerClassName = @item.handler.split('::')[1]
         handlerClass =  LuggageDisplays.const_get(handlerClassName)
 
         #create handler and render
@@ -139,13 +151,21 @@ module Luggage
           handlerClass = LuggageDisplays::Default
         end
 
-        @handler = handlerClass.new(item)
+        @handler = handlerClass.new(@item)
         @handlerHTML = @handler.get_html
 
         #set up nav links
-        @nav_links = [
-          { "text" => "Direct Link", "href" => @handler.get_direct_link },
-        ]
+        if logged_in?
+          @nav_links = [
+            { "text" => "Direct Link", "href" => @handler.get_direct_link },
+            { "text" => "Edit", "href" => '#edit' },
+          ]
+        else
+          @nav_links = [
+            { "text" => "Direct Link", "href" => @handler.get_direct_link },
+          ]
+        end
+
         render :view_file
       end
     end
@@ -154,10 +174,11 @@ module Luggage
   module Views
     def layout
       assets_url = $config['assets_url']
+      text '<!DOCTYPE html>'
       html do
         head do
           title { "Luggage" }
-          link :rel => "stylesheet", :href =>"http://twitter.github.com/bootstrap/1.4.0/bootstrap.min.css"
+          link :rel => "stylesheet", :href =>"#{assets_url}/css/bootstrap.css"
           link :rel => "stylesheet", :href =>"#{assets_url}/css/luggage.css"
           link :rel => "stylesheet", :href =>"#{assets_url}/css/default.css"
         end
@@ -165,10 +186,10 @@ module Luggage
           topbar
           self << yield 
           script :type => "text/javascript", :src => "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" do; end
-          script :type => "text/javascript", :src => "#{$config['assets_url']}/js/bootstrap-modal.js" do; end
-          script :type => "text/javascript", :src => "#{$config['assets_url']}/js/bootstrap-tabs.js" do; end
-          script :type => "text/javascript", :src => "#{$config['assets_url']}/js/bootstrap-alerts.js" do; end
-          script :type => "text/javascript", :src => "#{$config['assets_url']}/js/luggage.js" do; end
+          script :type => "text/javascript", :src => "#{assets_url}/js/bootstrap-modal.js" do; end
+          script :type => "text/javascript", :src => "#{assets_url}/js/bootstrap-tabs.js" do; end
+          script :type => "text/javascript", :src => "#{assets_url}/js/bootstrap-alerts.js" do; end
+          script :type => "text/javascript", :src => "#{assets_url}/js/luggage.js" do; end
         end
       end
     end
@@ -184,6 +205,13 @@ module Luggage
                 @nav_links.each do |link|
                   li { a link['text'], :href => link['href'] }
                 end
+              end
+            end
+            ul :class => "nav secondary-nav" do
+              if logged_in?
+                li { a "Log out", :href => R(Logout) }
+              else
+                li { a "Log in", :href => R(Login) }
               end
             end
           end
@@ -212,14 +240,58 @@ module Luggage
     end
 
     def index
+      if logged_in?
+        div.container do
+          uploader
+        end
+      end
       div.container do
-        uploader
         list_files
       end
     end
 
     def login
-      p "This is not yet ready!"
+      error = @login_error
+      div.container do
+        div.row
+          div :class => "page-header" do
+            h1 "Please login"
+          end
+
+          if error
+            div :class => "alert-message error" do
+              a.close :href => "#" do
+                "x" 
+              end
+              p do
+                strong "Oops!"
+                text "It seems that you may have typed something incorrectly, please try again."
+              end
+            end
+          end
+
+          div.span16 do
+          form :action => "/login/", :method => "post", :enctype => "form/multipart" do
+            fieldset do
+              div.clearfix do
+                label "Username", :for => "username"
+                div.input do
+                  input.xlarge :type => 'text', :name => 'username'
+                end
+              end
+              div.clearfix do
+                label "Password", :for => "password"
+                div.input do
+                  input.xlarge :type => 'password', :name => 'password'
+                end
+              end
+              div.actions do
+                input :value => "Login" ,:type => 'submit', :class => 'btn primary'
+              end
+            end
+          end
+        end
+      end
     end
 
     def logout
