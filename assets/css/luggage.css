@@ -4,11 +4,11 @@
 }
 
 .image img {
-  width: 95%;
+  max-width: 95%;
 }
 
 .image img.full {
-  width: auto;
+  max-width: none;
 }
 
 .highlighttable td {
