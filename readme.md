@@ -53,9 +53,12 @@ read luggage's config file, for whatever that is worth to them.
 
 #Roadmap
 * make sure all controllers are working
-* implement login stuff
-* Do we need open/ or can we just get away with open/item
-* Should non-logged in users see / as a the file list? (I am leaning
-  towards yes at this point in time.
+* Add paging to the front page, show last 20 items
+* Update the views field when items are viewed
 * File.API
-* Make it look nice (probably twitter bootstrap initially)
+* Make Share button change to uploading...
+* Validate on upload!
+* Allow users to edit file data (including key, handler, and file name?)
+* Allow users to remove uploaded files
+* implement login stuff
+* prevent csrf (just a random token on our forms correct?)
