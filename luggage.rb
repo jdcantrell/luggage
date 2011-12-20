@@ -1,4 +1,6 @@
-#Our Campings items
+#Caching example: http://snippets.dzone.com/posts/show/4988
+
+#Our camping items
 require 'camping'
 require 'camping/ar'
 require 'camping/session'
@@ -115,14 +117,6 @@ module Luggage
       end
     end
 
-    class Open
-      def get
-        #require_login!
-        @files = Item.all(:order => 'updated_at DESC')
-        render :list_files
-      end
-    end
-
     class OpenX
       
       def get(key)
@@ -159,14 +153,22 @@ module Luggage
 
   module Views
     def layout
+      assets_url = $config['assets_url']
       html do
         head do
           title { "Luggage" }
           link :rel => "stylesheet", :href =>"http://twitter.github.com/bootstrap/1.4.0/bootstrap.min.css"
+          link :rel => "stylesheet", :href =>"#{assets_url}/css/luggage.css"
+          link :rel => "stylesheet", :href =>"#{assets_url}/css/default.css"
         end
         body :style => "padding-top:60px" do
           topbar
           self << yield 
+          script :type => "text/javascript", :src => "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" do; end
+          script :type => "text/javascript", :src => "#{$config['assets_url']}/js/bootstrap-modal.js" do; end
+          script :type => "text/javascript", :src => "#{$config['assets_url']}/js/bootstrap-tabs.js" do; end
+          script :type => "text/javascript", :src => "#{$config['assets_url']}/js/bootstrap-alerts.js" do; end
+          script :type => "text/javascript", :src => "#{$config['assets_url']}/js/luggage.js" do; end
         end
       end
     end
