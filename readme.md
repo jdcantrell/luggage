@@ -52,10 +52,14 @@ anyone else they will be able to get that username and hash if they can
 read luggage's config file, for whatever that is worth to them. 
 
 #Roadmap
-* Add pagination to the front page
-* File.API
-* Make Share button change to uploading...
-* Validate on upload!
-* Allow users to edit file data (including key, handler, and file name?)
+* Finish updating a file on edit
 * Allow users to remove uploaded files
+* File.API
+  - if one file, upload and redirect
+  - if multiple files, upload and refresh
+  - checkbox for option to redirect?
+  - progress bar for upload?
+* Make site work with javascript off (because it should be easy)
+* Remove query debugging
 * prevent csrf (just a random token on our forms correct?)
+* Make user sessions optionally last for a year/30days?
