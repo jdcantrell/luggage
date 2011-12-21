@@ -149,6 +149,27 @@ module Luggage
       end
     end
 
+    class EditX
+      def get(key)
+        if key.index('.')
+          #lookup item by name
+          @item = Item.order('id DESC').where( :name => key).first
+        else
+          @item = Item.order('id DESC').where( :key => key).first
+        end
+        render :edit
+      end
+
+      def post(key)
+        if key.index('.')
+          #lookup item by name
+          @item = Item.order('id DESC').where( :name => key).first
+        else
+          @item = Item.order('id DESC').where( :key => key).first
+        end
+      end
+    end
+
     class OpenX
       
       def get(key)
@@ -179,7 +200,7 @@ module Luggage
         if logged_in?
           @nav_links = [
             { "text" => "Direct Link", "href" => @handler.get_direct_link },
-            { "text" => "Edit", "href" => '#edit' },
+            { "text" => "Edit","href" => "/edit/#{@item.key}" },
           ]
         else
           @nav_links = [
@@ -396,9 +417,100 @@ module Luggage
       end
     end
 
+    def edit_form
+      form do
+        fieldset do
+          div.clearfix do
+            label  "Name", :for => "name"
+            div.input do
+              input :class => "xlarge", :name => "name", :size => 30, :type => "text", :value => @item.name
+              span :class => "help-inline" do
+                "Please enter a name"
+              end
+            end
+          end
+          div.clearfix do
+            label "Short Key", :for => "shortKey" 
+            div.input do
+              input :class => "xlarge", :name => "shortKey", :size => 30, :type => "text", :value => @item.key
+              span :class => "help-inline" do
+                "Please enter a key"
+              end
+            end
+          end
+          div.clearfix do
+            label "Handler", :for => "handler" 
+            div.input do
+              select :class => "xlarge", :name => "handler" do
+                classes = LuggageDisplays.constants.collect{ |c| LuggageDisplays.const_get(c) }
+                puts @item.handler
+                classes.each do |c|
+                  if c.to_s == @item.handler
+                    option :selected => 1 do
+                      c
+                    end
+                  else
+                    option c
+                  end
+                end
+              end
+              span :class => "help-inline" do
+                "Please select a handler"
+              end
+            end
+          end
+        end
+      end
+    end
+
+    def edit
+      div.container do
+        div.row do
+          div :class => "page-header" do
+            h1 "Update #{@item.name}"
+          end
+          div.span16 do
+            edit_form
+            div.actions do
+              button :id => "edit_submit", :class => 'btn primary' do
+                "Save Changes"
+              end
+              text " "
+              button :class => 'btn secondary' do
+                "Cancel"
+              end
+            end
+          end
+        end
+      end
+    end
+
     def view_file
       div.content do
         @handlerHTML
+      end
+      if logged_in?
+        div.hide do 
+          div :class => "modal hide fade", :id => "edit_form" do
+            div :class => "modal-header" do
+              a :href => "#", :class => "close" do
+                "&times;"
+              end
+              h3 "File Settings"
+            end
+            div :class => "modal-body" do
+              edit_form
+            end
+            div :class => "modal-footer" do
+              a :href => "#", :id => "edit_save", :class => "btn primary" do
+                "Update"
+              end
+              a :href => "#", :class => "btn secondary" do
+                "Cancel"
+              end
+            end
+          end
+        end
       end
     end
   end
