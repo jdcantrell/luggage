@@ -25,4 +25,16 @@ $(function () {
   });
 
   //TODO: Add in File.API code (replaces the above forms)
+  if (typeof FileReader === "function") {
+    //replace the above forms with drag and drop area
+    //https://developer.mozilla.org/en/Using_files_from_web_applications
+    //http://stackoverflow.com/questions/4722500/html5s-file-api-example-with-jquery
+    //http://stackoverflow.com/questions/5157361/jquery-equivalent-to-xmlhttprequests-upload
+  }
+
+  //Edit Handlers
+  $('a[href*=edit]').bind('click', function (event) {
+    $('#edit_form').modal({backdrop: true, keyboard: true, show:true});
+    event.preventDefault();
+  })
 });
