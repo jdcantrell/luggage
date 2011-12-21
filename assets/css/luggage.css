@@ -26,3 +26,7 @@
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
 }
+
+.help-inline { display: none}
+
+.error .help-inline { display: inline }
