@@ -13,6 +13,9 @@ require 'yaml'
 #Here are our custom displays
 require './lib/luggage_displays/base'
 
+require 'logger'
+ActiveRecord::Base.logger = Logger.new(STDOUT)
+
 Camping.goes :Luggage
 
 $config = YAML::load_file('config.yml') 
@@ -46,8 +49,29 @@ module Luggage
   module Controllers
     class Index
       def get
-        @files = Item.order('created_at DESC').limit(20)
+        @files = Item.order('created_at DESC').limit($config['items_per_page'])
+        @count = Item.count()
+        @page = 1
         render :index
+      end
+    end
+
+    class PageN
+      def get(page)
+
+        begin
+          @page = Integer(page)
+        rescue
+          redirect Index
+        end
+
+        @count = Item.count()
+        if @page > 0 and (@page - 1) * $config['items_per_page'] < @count
+          @files = Item.order('created_at DESC').limit($config['items_per_page']).offset((@page - 1) * $config['items_per_page'])
+          render :index
+        else
+          redirect Index
+        end
       end
     end
 
@@ -83,6 +107,7 @@ module Luggage
 
     class Upload
       def post
+        require_login!
         temp = input.upload[:tempfile].path()
 
         #Setup item details
@@ -185,6 +210,7 @@ module Luggage
           script :type => "text/javascript", :src => "#{assets_url}/js/bootstrap-modal.js" do; end
           script :type => "text/javascript", :src => "#{assets_url}/js/bootstrap-tabs.js" do; end
           script :type => "text/javascript", :src => "#{assets_url}/js/bootstrap-alerts.js" do; end
+          script :type => "text/javascript", :src => "#{assets_url}/js/bootstrap-buttons.js" do; end
           script :type => "text/javascript", :src => "#{assets_url}/js/luggage.js" do; end
         end
       end
@@ -222,13 +248,18 @@ module Luggage
             h1 "Share something new"
           end
           div.span16 do
-          form :action => "/upload/", :method => "post", :enctype => "form/multipart" do
-            div.clearfix do
+          form :id => "upload_form", :action => "/upload/", :method => "post", :enctype => "form/multipart" do
+            div.clearfix :id => "upload_input" do
               label "File Input", :for => "upload"
               div.input do
-                input :type => 'file', :name => 'upload'
-                input :value => "Share File" ,:type => 'submit', :class => 'btn primary'
+                input :type => 'file', :name => 'upload', :id => 'upload'
+                span :class => "help-inline" do
+                  "Please select a file to upload"
+                end
               end
+            end
+            div.actions do
+              input :id => "upload_submit", :value => "Share File" ,:type => 'submit', :class => 'btn primary'
             end
           end
         end
@@ -295,6 +326,10 @@ module Luggage
     end
     
     def list_files
+      i = 0
+      page = @page
+      puts "PAGER"
+      puts page
       if @files.empty?
         h2 "Nothing uploaded!"
       else
@@ -322,6 +357,40 @@ module Luggage
                 end
               end
             end
+            if @count > $config['items_per_page']
+              div.pagination do
+                ul do
+                  li do
+                    if @page == 1
+                      a "< Previous", :class => "prev disabled"
+                    else
+                      puts "Prev"
+                      puts @page
+                      a "< Previous", :class => "prev", :href => R(PageN, @page - 1)
+                    end
+                  end
+                  until i * $config['items_per_page'] > @count do
+                    i += 1
+                    if i == @page
+                      li :class => "active" do
+                        a i, :href => R(PageN, i)
+                      end
+                    else
+                      li do
+                        a i, :href => R(PageN, i)
+                      end
+                    end
+                  end
+                  li do
+                    if @page * $config['items_per_page'] >= @count
+                      a "Next >", :class => "next disabled"
+                    else
+                      a "Next >", :class => "next", :href => R(PageN, @page + 1)
+                    end
+                  end
+                end
+              end
+            end
           end
         end
       end
@@ -341,7 +410,7 @@ module Luggage
 
     def require_login!
       unless logged_in?
-        redirect Controllers::Login
+        redirect Controllers::Index
         throw :halt
       end
     end
