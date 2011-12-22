@@ -52,14 +52,17 @@ anyone else they will be able to get that username and hash if they can
 read luggage's config file, for whatever that is worth to them. 
 
 #Roadmap
+* File.API
+  - progress bar for upload?
+  - handle multiple files - need to have a queue
+  - signify new files
 * Finish updating a file on edit
 * Allow users to remove uploaded files
-* File.API
-  - if one file, upload and redirect
-  - if multiple files, upload and refresh
-  - checkbox for option to redirect?
-  - progress bar for upload?
 * Make site work with javascript off (because it should be easy)
 * Remove query debugging
 * prevent csrf (just a random token on our forms correct?)
-* Make user sessions optionally last for a year/30days?
+* Make user sessions optionally last for a 30days instead of a year?
+* Caching example: http://snippets.dzone.com/posts/show/4988
+* Look into how camping's state works, is it secure enough to store
+  user session info? I'd think so given their examples, but it is worth
+  knowing
