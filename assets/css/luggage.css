@@ -30,3 +30,18 @@
 .help-inline { display: none}
 
 .error .help-inline { display: inline }
+
+#file_api {
+  display: none;
+}
+.file-api-actions {
+  text-align: right;
+}
+#drag_area {
+  margin-bottom:2px;
+}
+.drag-upload {
+  text-align: center;
+  font-size:20px;
+  padding:20px 0;
+}
