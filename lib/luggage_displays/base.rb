@@ -23,13 +23,17 @@ module LuggageDisplays
       get_web_path(@item.path)
     end
 
-    #this method may not be needed, putting it up for deletion
-    #I was thinking the markdown/source classes would use it. They could
-    #still use, but as of now they are generating based when a file is
-    #viewed.
+    #this gets called when the item is uploaded, allows the display to
+    #do things like, convert markdown to html and cache the copy, etc
     def process
       #no processing needed for the default case
       #since we'll only give them a download link
+    end
+
+    #this is called when an item is removed from the database, it gives
+    #the class a chance to remove any cached files or do any required
+    #cleanup (this may get called on a file move too)
+    def remove
     end
 
     #this should be the main function extended in children classes. It
@@ -70,15 +74,27 @@ module LuggageDisplays
     end
   end
 
-  #Markdown and Source both have two tabs, one for pretty output and
-  #another for the raw source
-  #TODO: Have Markdown handle {% highglight python %}{% endhighlight %}
-  #style tags and use Albino for the output
-  class Markdown < Default
-    HANDLES  = {".md" => 1, ".markdown" => 1}
+  #Source view has two tabs, one for a pretty version of the source and
+  #another for the raw text 
+  class Source < Default
+    HANDLES  = {".php" => 'php', ".py" => 'python', '.rb' => 'ruby',
+      '.html' => 'html', '.css' => 'css', '.js' => "javascript", 
+      '.c'=> 'c', '.cpp' => 'cpp'}
 
     def parse_contents(contents)
-      Kramdown::Document.new(contents).to_html
+      syntaxer = Albino.new(contents, Source::HANDLES[@item.filetype])
+      syntaxer.colorize( :O => "linenos=True,bg=light")
+    end
+
+    def process
+      #get source text
+      source = File.open(@item.path, "r")
+      contents = source.read
+
+      #else generate file
+      html = parse_contents(contents)
+      parsed = File.new("#{$config['upload_path']}/cache/#{@item.key}", "w")
+      parsed.write(html)
     end
 
     def generate_html(item)
@@ -86,16 +102,12 @@ module LuggageDisplays
       source = File.open(item.path, "r")
       contents = source.read
 
-      #if we have a cached file use that
-      if File.exists?("#{$config['upload_path']}/cache/#{item.key}")
-        parsed = File.open("#{$config['upload_path']}/cache/#{item.key}", "r")
-        html = parsed.read
-      else
-        #else generate file
-        html = parse_contents(contents)
-        parsed = File.new("#{$config['upload_path']}/cache/#{item.key}", "w")
-        parsed.write(html)
+      if not File.exists?("#{$config['upload_path']}/cache/#{item.key}")
+        :process
       end
+
+      parsed = File.open("#{$config['upload_path']}/cache/#{item.key}", "r")
+      html = parsed.read
 
       @markaby.div.container do
         ul :class => "tabs view-tabs" do
@@ -118,14 +130,12 @@ module LuggageDisplays
     end
   end
 
-  class Source < Markdown
-    HANDLES  = {".php" => 'php', ".py" => 'python', '.rb' => 'ruby',
-      '.html' => 'html', '.css' => 'css', '.js' => "javascript", 
-      '.c'=> 'c', '.cpp' => 'cpp'}
+  #TODO: parse {% highlight python %} tags
+  class Markdown < Source
+    HANDLES  = {".md" => 1, ".markdown" => 1}
 
     def parse_contents(contents)
-      syntaxer = Albino.new(contents, Source::HANDLES[@item.filetype])
-      syntaxer.colorize( :O => "linenos=True,bg=light")
+      Kramdown::Document.new(contents).to_html
     end
   end
 end
