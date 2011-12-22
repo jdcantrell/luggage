@@ -1,5 +1,3 @@
-#Caching example: http://snippets.dzone.com/posts/show/4988
-
 #Our camping items
 require 'camping'
 require 'camping/ar'
@@ -22,7 +20,6 @@ $config = YAML::load_file('config.yml')
 
 module Luggage
   include Camping::Session
-
 
   module Models
     class Item < Base;end
@@ -59,6 +56,7 @@ module Luggage
     class PageN
       def get(page)
 
+        #If we're not given a number, go to index
         begin
           @page = Integer(page)
         rescue
@@ -66,11 +64,13 @@ module Luggage
         end
 
         @count = Item.count()
-        if @page > 0 and (@page - 1) * $config['items_per_page'] < @count
+        #If we're giving a number below zero or greater than we have
+        #pages for go to the index
+        if @page < 1 or (@page - 1) * $config['items_per_page'] > @count
+          redirect Index
+        else
           @files = Item.order('created_at DESC').limit($config['items_per_page']).offset((@page - 1) * $config['items_per_page'])
           render :index
-        else
-          redirect Index
         end
       end
     end
@@ -110,7 +110,6 @@ module Luggage
         require_login!
         temp = input.upload[:tempfile].path()
 
-        #Setup item details
 
         #TODO: something different and only if this is really needed
         #new key every second, good until 2038-12-24
@@ -145,7 +144,11 @@ module Luggage
 
         #else redirect to Open/filename
         #TODO: Redirect!
-        redirect OpenX, item.name
+        if input.json
+          item.to_json
+        else
+          redirect OpenX, item.name
+        end
       end
     end
 
@@ -167,6 +170,11 @@ module Luggage
         else
           @item = Item.order('id DESC').where( :key => key).first
         end
+
+        # if key or name is different
+        # mv file to key-name
+        # save item
+        # redirect to OpenX with key
       end
     end
 
@@ -264,23 +272,41 @@ module Luggage
 
     def uploader
       div :class => "uploader" do
-        div.row
+        div :class => "row post-form"
           div :class => "page-header" do
             h1 "Share something new"
           end
-          div.span16 do
           form :id => "upload_form", :action => "/upload/", :method => "post", :enctype => "form/multipart" do
-            div.clearfix :id => "upload_input" do
-              label "File Input", :for => "upload"
-              div.input do
-                input :type => 'file', :name => 'upload', :id => 'upload'
-                span :class => "help-inline" do
-                  "Please select a file to upload"
+          div.span16 do
+            div :id => "file_api" do
+              div :id => "drag_area", :class => "alert-message block-message info" do
+                p :class => "drag-upload" do
+                  strong "Drag"
+                  text " and "
+                  strong "drop"
+                  text " your files "
+                  strong "here"
+                  text " to upload!"
                 end
               end
+              div :class => "file-api-actions" do
+                a "Use regular upload form", :href => "#", :id => "toggle_form"
+              end
             end
-            div.actions do
-              input :id => "upload_submit", :value => "Share File" ,:type => 'submit', :class => 'btn primary'
+
+            div :id => "fallback" do
+              div.clearfix :id => "upload_input" do
+                label "File Input", :for => "upload"
+                div.input do
+                  input :type => 'file', :name => 'upload', :id => 'upload'
+                  span :class => "help-inline" do
+                    "Please select a file to upload"
+                  end
+                end
+              end
+              div.actions do
+                input :id => "upload_submit", :value => "Share File" ,:type => 'submit', :class => 'btn primary'
+              end
             end
           end
         end
@@ -359,7 +385,7 @@ module Luggage
             h1 "Your previously shared files"
           end
           div.span16 do
-            table do
+            table :class => "file-list" do
               thead do
                 tr do
                   th "File Name"
