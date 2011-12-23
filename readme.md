@@ -25,7 +25,7 @@ Here is the quick and dirty way to get going:
 Once you have done that download or clone the luggage repository and
 fire up your vim (or whatever poor excuse for an editor you're using)
 and modify config.yml to any reasonable value you can think of.
-password_hash is your bcrypted password (TODO: demonstrate this further)
+password\_hash is your bcrypted password (TODO: demonstrate this further)
 
 
 #Okay how do we do it?
@@ -56,9 +56,13 @@ read luggage's config file, for whatever that is worth to them.
   - progress bar for upload?
   - handle multiple files - need to have a queue
   - signify new files
+* Format Uploaded On dates
+* Use prettify.js instead of Albino - if we can optionally load on
+  source pages
 * Finish updating a file on edit
 * Allow users to remove uploaded files
 * Make site work with javascript off (because it should be easy)
+* Fabfile and deploy
 * Remove query debugging
 * prevent csrf (just a random token on our forms correct?)
 * Make user sessions optionally last for a 30days instead of a year?
