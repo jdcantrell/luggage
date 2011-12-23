@@ -558,4 +558,7 @@ end
 
 def Luggage.create
   Luggage::Models.create_schema :assume => (Luggage::Models::Item.table_exists? ? 1.0 : 0.0)
+  Luggage::Models::Base.establish_connection(
+   :adapter => 'sqlite3',
+   :database => 'luggage.db')
 end
