@@ -52,6 +52,10 @@ anyone else they will be able to get that username and hash if they can
 read luggage's config file, for whatever that is worth to them. 
 
 #Roadmap
+* Add in base_url config param
+* Add in ./config/config.ru and ./config/unicorn-luggage.rb
+* Make db configurable
+* Fabfile and deploy
 * File.API
   - progress bar for upload?
   - handle multiple files - need to have a queue
@@ -62,7 +66,6 @@ read luggage's config file, for whatever that is worth to them.
 * Finish updating a file on edit
 * Allow users to remove uploaded files
 * Make site work with javascript off (because it should be easy)
-* Fabfile and deploy
 * Remove query debugging
 * prevent csrf (just a random token on our forms correct?)
 * Make user sessions optionally last for a 30days instead of a year?
