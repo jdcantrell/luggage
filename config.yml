@@ -9,11 +9,17 @@ password_hash: 'PASSWORD_HASH'
 #unicorns
 upload_path: 'UPLOAD_PATH'
 
+
+#This is the url you go to in order to visit luggage such as:
+#http://goodorobot.net/luggage
+base_url: "BASE_URL"
+
 #This is the url you would like to use to serve static files, such as
 #the files that have been uploaded and the javascript and css for
 #luggage. This url should mapped to a folder that contains /uploads and
 #/assests for luggage
 static_url: 'STATIC_URL'
+
 
 #Database info
 db_adapter: 'sqlite3'
