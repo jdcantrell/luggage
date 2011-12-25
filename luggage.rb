@@ -208,7 +208,7 @@ module Luggage
         if logged_in?
           @nav_links = [
             { "text" => "Direct Link", "href" => @handler.get_direct_link },
-            { "text" => "Edit","href" => "/edit/#{@item.key}" },
+            { "text" => "Edit","href" => URL(EditX, @item.key) },
           ]
         else
           @nav_links = [
@@ -223,7 +223,7 @@ module Luggage
 
   module Views
     def layout
-      assets_url = $config['assets_url']
+      assets_url = "#{$config['static_url']}/assets"
       text '<!DOCTYPE html>'
       html do
         head do
@@ -249,7 +249,7 @@ module Luggage
       div.topbar do
         div :class => "topbar-inner" do
           div.container do
-            a.brand "Luggage", :href => '/'
+            a.brand $config['title'], :href => URL(Index)
             ul.nav do
               if @nav_links == nil
               else
@@ -260,9 +260,9 @@ module Luggage
             end
             ul :class => "nav secondary-nav" do
               if logged_in?
-                li { a "Log out", :href => R(Logout) }
+                li { a "Log out", :href => URL(Logout) }
               else
-                li { a "Log in", :href => R(Login) }
+                li { a "Log in", :href => URL(Login) }
               end
             end
           end
@@ -276,7 +276,7 @@ module Luggage
           div :class => "page-header" do
             h1 "Share something new"
           end
-          form :id => "upload_form", :action => "/upload/", :method => "post", :enctype => "form/multipart" do
+          form :id => "upload_form", :action => URL(Upload), :method => "post", :enctype => "form/multipart" do
           div.span16 do
             div :id => "file_api" do
               div :id => "drag_area", :class => "alert-message block-message info" do
@@ -345,7 +345,7 @@ module Luggage
           end
 
           div.span16 do
-          form :action => "/login/", :method => "post", :enctype => "form/multipart" do
+          form :action => URL(Login), :method => "post", :enctype => "form/multipart" do
             fieldset do
               div.clearfix do
                 label "Username", :for => "username"
@@ -395,7 +395,7 @@ module Luggage
               end
               tbody do
                 @files.each do |file|
-                  url = R(OpenX, file.key)
+                  url = URL(OpenX, file.key)
                   tr do
                     td { a file.name, :href => url }
                     td file.views
@@ -413,18 +413,18 @@ module Luggage
                     else
                       puts "Prev"
                       puts @page
-                      a "< Previous", :class => "prev", :href => R(PageN, @page - 1)
+                      a "< Previous", :class => "prev", :href => URL(PageN, @page - 1)
                     end
                   end
                   until i * $config['items_per_page'] > @count do
                     i += 1
                     if i == @page
                       li :class => "active" do
-                        a i, :href => R(PageN, i)
+                        a i, :href => URL(PageN, i)
                       end
                     else
                       li do
-                        a i, :href => R(PageN, i)
+                        a i, :href => URL(PageN, i)
                       end
                     end
                   end
@@ -432,7 +432,7 @@ module Luggage
                     if @page * $config['items_per_page'] >= @count
                       a "Next >", :class => "next disabled"
                     else
-                      a "Next >", :class => "next", :href => R(PageN, @page + 1)
+                      a "Next >", :class => "next", :href => URL(PageN, @page + 1)
                     end
                   end
                 end
@@ -557,8 +557,17 @@ module Luggage
 end
 
 def Luggage.create
-  Camping::Models::Base.establish_connection(
-   :adapter => 'sqlite3',
-   :database => 'luggage.db')
+  if $config['adapter'] == 'sqlite3'
+    Camping::Models::Base.establish_connection(
+     :adapter => $config['db_adapter'],
+     :database => $config['db_name'])
+  else
+    Camping::Models::Base.establish_connection(
+     :adapter => $config['db_adapter'],
+     :database => $config['db_name'],
+     :host => $config['db_host'],
+     :username => $config['db_username'],
+     :password => $config['db_password'])
+  end
   Luggage::Models.create_schema :assume => (Luggage::Models::Item.table_exists? ? 1.0 : 0.0)
 end

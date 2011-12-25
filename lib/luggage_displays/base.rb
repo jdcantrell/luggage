@@ -16,7 +16,7 @@ module LuggageDisplays
 
     #TODO: see if we can't remove one of these...
     def get_web_path(path)
-      path.sub( $config['upload_path'], $config['static_url'])
+      path.sub( $config['upload_path'], "#{$config['static_url']}/uploads")
     end
 
     def get_direct_link
