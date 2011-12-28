@@ -73,7 +73,7 @@ $(function () {
 //it'll need to handle updating the interface as well as getting a list
 //of files uploaded incase of multiple upload
 function add_file(data) {
-  var rowHTML = '<tr><td><a href="/open/{key}">{name}</a></td><td>0</td><td><span class="label success">New!</span> </td></tr>';
+  var rowHTML = '<tr><td><a href="open/{key}">{name}</a></td><td>0</td><td><span class="label success">New!</span> </td></tr>';
   var newRow = rowHTML.replace('{key}', data.item.key).replace('{name}', data.item.name)
   $('.file-list > tbody > tr').first().before(newRow);
 }
