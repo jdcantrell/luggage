@@ -90,17 +90,20 @@ module LuggageDisplays
       #get source text
       source = File.open(@item.path, "r")
       contents = source.read
+      source.close
 
       #else generate file
       html = parse_contents(contents)
       parsed = File.new("#{$config['upload_path']}/cache/#{@item.key}", "w")
       parsed.write(html)
+      parsed.close
     end
 
     def generate_html(item)
       #get source text
       source = File.open(item.path, "r")
       contents = source.read
+      source.close
 
       if not File.exists?("#{$config['upload_path']}/cache/#{item.key}")
         :process
@@ -108,6 +111,7 @@ module LuggageDisplays
 
       parsed = File.open("#{$config['upload_path']}/cache/#{item.key}", "r")
       html = parsed.read
+      parsed.close
 
       @markaby.div.container do
         ul :class => "tabs view-tabs" do
