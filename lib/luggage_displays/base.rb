@@ -106,7 +106,7 @@ module LuggageDisplays
       source.close
 
       if not File.exists?("#{$config['upload_path']}/cache/#{item.key}")
-        :process
+        self.process
       end
 
       parsed = File.open("#{$config['upload_path']}/cache/#{item.key}", "r")
