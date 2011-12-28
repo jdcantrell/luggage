@@ -11,8 +11,8 @@ require 'yaml'
 #Here are our custom displays
 require './lib/luggage_displays/base'
 
-require 'logger'
-ActiveRecord::Base.logger = Logger.new(STDOUT)
+#require 'logger'
+#ActiveRecord::Base.logger = Logger.new(STDOUT)
 
 Camping.goes :Luggage
 
@@ -375,8 +375,6 @@ module Luggage
     def list_files
       i = 0
       page = @page
-      puts "PAGER"
-      puts page
       if @files.empty?
         h2 "Nothing uploaded!"
       else
@@ -411,8 +409,6 @@ module Luggage
                     if @page == 1
                       a "< Previous", :class => "prev disabled"
                     else
-                      puts "Prev"
-                      puts @page
                       a "< Previous", :class => "prev", :href => R(PageN, @page - 1)
                     end
                   end
@@ -469,7 +465,6 @@ module Luggage
             div.input do
               select :class => "xlarge", :name => "handler" do
                 classes = LuggageDisplays.constants.collect{ |c| LuggageDisplays.const_get(c) }
-                puts @item.handler
                 classes.each do |c|
                   if c.to_s == @item.handler
                     option :selected => 1 do
