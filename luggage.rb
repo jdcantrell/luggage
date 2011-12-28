@@ -117,8 +117,7 @@ module Luggage
 
         filename = input.upload[:filename]
         extension = File.extname(filename)
-        dir = $config['upload_path']
-        path = "#{dir}/#{key}-#{filename}"
+        path = "#{$config['upload_path']}/#{key}-#{filename}"
         FileUtils.cp temp, path
 
         #find an appropriate handler
@@ -166,15 +165,39 @@ module Luggage
       def post(key)
         if key.index('.')
           #lookup item by name
-          @item = Item.order('id DESC').where( :name => key).first
+          item = Item.order('id DESC').where( :name => key).first
         else
-          @item = Item.order('id DESC').where( :key => key).first
+          item = Item.order('id DESC').where( :key => key).first
         end
 
-        # if key or name is different
-        # mv file to key-name
-        # save item
-        # redirect to OpenX with key
+        rename = false
+        orig = "#{$config['upload_path']}/#{item.key}-#{item.name}"
+
+        #TODO: shortkey scrubbing?
+        if item.key != input.shortKey
+          item.key = input.shortKey
+          rename = true
+        end
+
+        if item.name != input.name
+          item.name = input.name
+          rename = true
+        end
+
+        if rename
+          new_name = "#{$config['upload_path']}/#{input.shortKey}-#{input.name}"
+          item.path = new_name
+          FileUtils.mv orig, new_name
+          puts 
+        end
+
+        #TODO: make input.handler is valid
+        item.handler = input.handler
+
+        item.save
+
+        redirect OpenX, item.key
+
       end
     end
 
@@ -440,7 +463,7 @@ module Luggage
     end
 
     def edit_form
-      form do
+      form :action => R(EditX, @item.key), :method => 'post' do
         fieldset do
           div.clearfix do
             label  "Name", :for => "name"
