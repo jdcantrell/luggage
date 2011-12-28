@@ -11,6 +11,10 @@ $(function () {
     event.preventDefault();
   });
 
+  $('#edit_save').click(function () {
+    $('#edit_form').find('form').submit();
+  });
+
   //This code is for the index/uploaders
   $('#upload_input input').bind('change', function () {
     if ($(this).val() !== "") {
@@ -59,7 +63,6 @@ $(function () {
         var originalEvent = event.originalEvent
         var files = ( originalEvent.files || originalEvent.dataTransfer.files )
         for (var i = 0; i < files.length; i += 1) {
-          console.log(files[i]);
           //queue objects to be uploaded
           upload_file(files[i]);
         }
@@ -86,7 +89,7 @@ function upload_file(file) {
   xhr.upload.addEventListener("progress", function (e) {
     if (e.lengthComputable) {
       var percentage = Math.round((e.loaded * 100) / e.total);
-      console.log('percentage', percentage);
+      //TODO: show progress on ui
     }
   }, false);
   
