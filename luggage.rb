@@ -208,7 +208,7 @@ module Luggage
         if logged_in?
           @nav_links = [
             { "text" => "Direct Link", "href" => @handler.get_direct_link },
-            { "text" => "Edit","href" => "#{$config['base_url']}#{R(EditX, @item.key)}" },
+            { "text" => "Edit","href" => R(EditX, @item.key) },
           ]
         else
           @nav_links = [
@@ -249,7 +249,7 @@ module Luggage
       div.topbar do
         div :class => "topbar-inner" do
           div.container do
-            a.brand $config['title'], :href => "#{$config['base_url']}#{R(Index)}"
+            a.brand $config['title'], :href => R(Index)
             ul.nav do
               if @nav_links == nil
               else
@@ -260,9 +260,9 @@ module Luggage
             end
             ul :class => "nav secondary-nav" do
               if logged_in?
-                li { a "Log out", :href => "#{$config['base_url']}#{R(Logout)}" }
+                li { a "Log out", :href => R(Logout) }
               else
-                li { a "Log in", :href => "#{$config['base_url']}#{R(Login)}" }
+                li { a "Log in", :href => R(Login) }
               end
             end
           end
@@ -276,7 +276,7 @@ module Luggage
           div :class => "page-header" do
             h1 "Share something new"
           end
-          form :id => "upload_form", :action => "#{$config['base_url']}#{R(Upload)}", :method => "post", :enctype => "form/multipart" do
+          form :id => "upload_form", :action => R(Upload), :method => "post", :enctype => "form/multipart" do
           div.span16 do
             div :id => "file_api" do
               div :id => "drag_area", :class => "alert-message block-message info" do
@@ -345,7 +345,7 @@ module Luggage
           end
 
           div.span16 do
-          form :action => "#{$config['base_url']}#{R(Login)}", :method => "post", :enctype => "form/multipart" do
+          form :action => R(Login), :method => "post", :enctype => "form/multipart" do
             fieldset do
               div.clearfix do
                 label "Username", :for => "username"
@@ -395,7 +395,7 @@ module Luggage
               end
               tbody do
                 @files.each do |file|
-                  url = "#{$config['base_url']}#{R(OpenX, file.key)}"
+                  url = R(OpenX, file.key)
                   tr do
                     td { a file.name, :href => url }
                     td file.views
@@ -413,18 +413,18 @@ module Luggage
                     else
                       puts "Prev"
                       puts @page
-                      a "< Previous", :class => "prev", :href => "#{$config['base_url']}#{R(PageN, @page - 1)}"
+                      a "< Previous", :class => "prev", :href => R(PageN, @page - 1)
                     end
                   end
                   until i * $config['items_per_page'] > @count do
                     i += 1
                     if i == @page
                       li :class => "active" do
-                        a i, :href => "#{$config['base_url']}#{R(PageN, i)}"
+                        a i, :href => R(PageN, i)
                       end
                     else
                       li do
-                        a i, :href => "#{$config['base_url']}#{R(PageN, i)}"
+                        a i, :href => R(PageN, i)
                       end
                     end
                   end
@@ -432,7 +432,7 @@ module Luggage
                     if @page * $config['items_per_page'] >= @count
                       a "Next >", :class => "next disabled"
                     else
-                      a "Next >", :class => "next", :href => "#{$config['base_url']}#{R(PageN, @page + 1)}"
+                      a "Next >", :class => "next", :href => R(PageN, @page + 1)
                     end
                   end
                 end
