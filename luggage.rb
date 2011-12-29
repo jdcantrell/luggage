@@ -86,7 +86,6 @@ module Luggage
       end
 
       def post
-        #TODO: make this do something useful
         @password = BCrypt::Password.new($config['password_hash'])
         if $config['username'] == input.username and @password == input.password
           @state.user_id = 1
@@ -139,10 +138,8 @@ module Luggage
         #instantiate handler and process
         handler = handlerClass.new(item)
         handler.process
-        #returns json if ajax: true
 
-        #else redirect to Open/filename
-        #TODO: Redirect!
+        #returns json if ajax: true
         if input.json
           item.to_json
         else
@@ -173,26 +170,53 @@ module Luggage
         rename = false
         orig = "#{$config['upload_path']}/#{item.key}-#{item.name}"
 
-        #TODO: shortkey scrubbing?
+        @errors = {}
         if item.key != input.shortKey
-          item.key = input.shortKey
-          rename = true
+          if /^[a-zA-Z0-9._\-]*$/ =~ input.shortKey
+            #need to validate shortkey
+            checkItem = Item.order('id DESC').where( :key => input.shortKey).first
+            if checkItem == nil
+              item.key = input.shortKey
+              rename = true
+            else
+              @errors['shortKey'] = 'Sorry that shortkey is already in use, please select a different one'
+            end
+          else
+            @errors['shortKey'] = 'Please use only letters, numbers, dash and period.'
+          end
         end
 
         if item.name != input.name
-          item.name = input.name
-          rename = true
+          if /^[a-zA-Z0-9._\-]*$/ =~ input.shortKey
+            item.name = input.name
+            rename = true
+          else
+            @errors['name'] = 'Please use only letters, numbers, dash and period.'
+          end
         end
 
+        #TODO: do discard changes
+        if @errors.length != 0
+          @item = item
+          return render :edit
+        end
+
+        #no errors so let us update
         if rename
           new_name = "#{$config['upload_path']}/#{input.shortKey}-#{input.name}"
           item.path = new_name
           FileUtils.mv orig, new_name
-          puts 
         end
 
-        #TODO: make input.handler is valid
-        item.handler = input.handler
+        #See if we were given a valid handler to use and if so, let us
+        #update!
+        classes = LuggageDisplays.constants.collect{ |c| LuggageDisplays.const_get(c) }
+
+        classes.each do |c|
+          if c.to_s == input.handler
+            item.handler = input.handler
+          end
+        end
 
         item.save
 
@@ -462,24 +486,38 @@ module Luggage
       end
     end
 
-    def edit_form
+    def edit_form(buttons=nil)
+      name_error = ""
+      key_error = ""
+      if @errors == nil
+        @errors = {}
+      else
+        if @errors['name']
+          name_error = "error"
+        end
+
+        if @errors['shortKey']
+          key_error = "error"
+        end
+      end
+
       form :action => R(EditX, @item.key), :method => 'post' do
         fieldset do
-          div.clearfix do
+          div :class => "clearfix " + name_error do
             label  "Name", :for => "name"
             div.input do
-              input :class => "xlarge", :name => "name", :size => 30, :type => "text", :value => @item.name
+              input :class => "xlarge " + name_error, :name => "name", :size => 30, :type => "text", :value => @item.name
               span :class => "help-inline" do
-                "Please enter a name"
+                @errors['name']
               end
             end
           end
-          div.clearfix do
+          div :class => "clearfix " + key_error do
             label "Short Key", :for => "shortKey" 
             div.input do
-              input :class => "xlarge", :name => "shortKey", :size => 30, :type => "text", :value => @item.key
+              input :class => "xlarge " + key_error, :name => "shortKey", :size => 30, :type => "text", :value => @item.key
               span :class => "help-inline" do
-                "Please enter a key"
+                @errors['shortKey']
               end
             end
           end
@@ -504,6 +542,15 @@ module Luggage
             end
           end
         end
+        if buttons != nil
+          div.actions do
+            button :class => 'btn secondary' do
+              "Cancel"
+            end
+            text " "
+            input :type=>"submit", :value => "Save Changes", :id => "edit_submit", :class => 'btn primary'
+          end
+        end
       end
     end
 
@@ -514,16 +561,7 @@ module Luggage
             h1 "Update #{@item.name}"
           end
           div.span16 do
-            edit_form
-            div.actions do
-              button :id => "edit_submit", :class => 'btn primary' do
-                "Save Changes"
-              end
-              text " "
-              button :class => 'btn secondary' do
-                "Cancel"
-              end
-            end
+            edit_form true
           end
         end
       end
