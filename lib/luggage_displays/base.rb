@@ -63,7 +63,7 @@ module LuggageDisplays
   #Small class to handle displaying image files
   #TODO: decide if we should convert from png, bmp, etc => jpg
   class Images < Default
-    HANDLES  = {".jpg" => 1, ".png" => 1}
+    HANDLES  = {".jpg" => 1, ".png" => 1, ".gif" => 1}
 
     def generate_html(item)
       img_src = get_web_path(item.path)
