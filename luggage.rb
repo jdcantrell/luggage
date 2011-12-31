@@ -112,7 +112,8 @@ module Luggage
 
         #TODO: something different and only if this is really needed
         #new key every second, good until 2038-12-24
-        key = Time.now.to_i.to_s(36)
+        time = Time.now.to_f * 100
+        key = time.to_i.to_s(36)
 
         filename = input.upload[:filename]
         extension = File.extname(filename)
