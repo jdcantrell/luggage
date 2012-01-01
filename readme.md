@@ -1,5 +1,4 @@
 #Why?
-
 Luggage is designed to be a simple script that provides similar
 functionality to cloud.app. It basically allows you to drag and drop
 files on to the web page so that you can share them with friends and
@@ -9,39 +8,39 @@ I originally started this as a way to dip my toes in to Ruby
 development. I also have done this as a chance to play with the new
 javascript File.API available in Chrome and Firefox. 
 
-It also solves a frustration of mine that, while cloud.app's user
-experience is very good, the cost for what is delivered is not that
-great. However, take that from someone who already pays for a webserver,
-knows how to code, and does *not* pay for cloud.app currently. 
-
 #Required software
 You will need:
 * Ruby and Ruby Gems
 
 Here is the quick and dirty way to get going:
 
-`gem install camping-omnibus bcrypt-ruby`
-
-Additionally these are needed for the source and markdown views:
-
-`gem install kramdown albino`
+`gem install camping-omnibus bcrypt-ruby kramdown`
 
 Once you have done that download or clone the luggage repository and
-fire up your vim (or whatever poor excuse for an editor you're using)
-and modify config.yml to any reasonable value you can think of.
-password\_hash is your bcrypted password (TODO: demonstrate this further)
+fire up a text editor modify config.yml to any reasonable value you can
+think of.  password\_hash is your bcrypted password. You can run the
+included hash.rb file: `ruby hash.rb` to generate the correct hash
+string. 
 
+You can test out luggage locally by modifying config.yml and then by
+running `camping luggage.rb` and then starting another web server in the
+same directory to serve out static files (Personally I use `python -m
+SimpleHTTPServer 40001`)
 
-#Okay how do we do it?
+#Gettings things on the web
+The two things I use to serve luggage is nginx with a proxy to unicorn.
+The settings are pretty standard, set up nginx to use unicorn as in the
+[example](http://unicorn.bogomips.org/examples/nginx.conf) given from
+the unicorn website. And for your unicorn.rb file you can use the
+[example](http://unicorn.bogomips.org/examples/unicorn.conf.rb) on the
+unicorn site, just be sure to remove the lines pertaining to
+ActiveRecord in the functions before_fork and after_fork.
 
-One sad side affect of going with Camping as the main framework is that
-I also chose not to implement a static file controller. Instead I opted
-to have a virtual server handle serving static files while another
-virtual server handles running camping. So here is the basic setup that
-I have going:
-
-* TODO: how the heck do I setup camping on nginx
-* TODO: show the static virtual server config
+Luggage does not have any code for dealing with static files (ie the
+files you uploaded) because this is not something camping has built in.
+For this reason luggage relies on a STATIC_URL in the config file this
+should point to a virtual server that will then serve the files for you
+(on my site this is static.goodrobot.net).
 
 #Other things?
 You can access files by either going open/key or open/filename. In the
@@ -50,13 +49,20 @@ matching the given filename.
 
 I opted to not make this app multi-user, instead going for a single-user
 web app. Which, turns out, is a little bit of a strange concept. This is
-the reason why you store your username and password in the yaml file. So
-I recommend you be smart about that, if your server is accessed by
-anyone else they will be able to get that username and hash if they can
-read luggage's config file, for whatever that is worth to them. 
+the reason why you store your username and password hash in the yaml
+file. So I recommend you be smart about that, if your server is accessed
+by anyone else they will be able to get that username and hash if they
+can read config.yml file, for whatever that is worth to them. 
+
+The repo contains a demo fabfile.py for deploying, you will probably
+need to modify it to suit your needs.
+
+Some of this code may not be 100% awesome. But it works, which is 100%
+awesome.
 
 #Roadmap
 * prevent csrf (random session token for forms and cookie)
+* Enhance syntax colors
 * Demo branch
 
 * Make site work with javascript off (because it should be easy)
@@ -66,3 +72,9 @@ read luggage's config file, for whatever that is worth to them.
 * Look into how camping's state works, is it secure enough to store
   user session info? I'd think so given their examples, but it is worth
   knowing
+
+#Full list of software/code that is used in this project
+* Ruby with camping, kramdown, bcrypt-ruby
+* [Twitter Bootstrap](http://twitter.github.com/bootstrap/)
+* [google-code-prettify](http://code.google.com/p/google-code-prettify/)
+* [jQuery](http://jquery.com/)
