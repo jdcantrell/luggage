@@ -45,3 +45,17 @@
   font-size:20px;
   padding:20px 0;
 }
+
+.remove {
+  text-align: center;
+  width: 70px;
+}
+
+.uploaded {
+  width: 150px;
+}
+
+.views {
+ width: 70px;
+}
+ 

@@ -15,6 +15,10 @@ $(function () {
     $('#edit_form').find('form').submit();
   });
 
+  if (typeof prettyPrint === "function") {
+    prettyPrint();
+  }
+
   //This code is for the index/uploaders
   $('#upload_input input').bind('change', function () {
     if ($(this).val() !== "") {
@@ -33,6 +37,20 @@ $(function () {
     }
   });
 
+  //Index page code
+  
+  //generic confirmation code
+  $('a.confirm').bind('click', function (event) {
+    $('.confirm_button').attr('href', this.href)
+    $('.confirm_button').parents('.modal').modal({backdrop: true, keyboard: true, show:true});
+    event.preventDefault();
+  });
+
+  $('.cancel_button').click(function () {
+    $(this).parents('.modal').modal('hide');
+  })
+  
+  //file api code
   if (typeof FileReader === "function") {
     
     $('#toggle_form').bind('click', function () {
@@ -76,9 +94,10 @@ $(function () {
 //it'll need to handle updating the interface as well as getting a list
 //of files uploaded incase of multiple upload
 function add_file(data) {
-  var rowHTML = '<tr><td><a href="open/{key}">{name}</a></td><td>0</td><td><span class="label success">New!</span> </td></tr>';
-  var newRow = rowHTML.replace('{key}', data.item.key).replace('{name}', data.item.name)
+  var rowHTML = '<tr><td><a href="open/{key}">{name}</a></td><td>0</td><td><span class="label success">New!</span> </td><td class="remove"><a href="remove/{key}">&times;</a></td></tr>';
+  var newRow = rowHTML.replace(/{key}/g, data.item.key).replace('{name}', data.item.name)
   $('.file-list > tbody > tr').first().before(newRow);
+  $('#no_files').parent().remove()
 }
 
 function upload_file(file) {

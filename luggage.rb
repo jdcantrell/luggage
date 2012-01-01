@@ -109,7 +109,6 @@ module Luggage
         require_login!
         temp = input.upload[:tempfile].path()
 
-
         #TODO: something different and only if this is really needed
         #new key every second, good until 2038-12-24
         time = Time.now.to_f * 100
@@ -146,6 +145,20 @@ module Luggage
         else
           redirect OpenX, item.name
         end
+      end
+    end
+
+    class RemoveX
+      def get(key)
+        if logged_in?
+          item = Item.order('id DESC').where( :key => key).first
+          #remove file
+          FileUtils.rm item.path, :force => true
+          #remove db record
+          Item.delete(item.id)
+        end
+
+        redirect Index
       end
     end
 
@@ -366,6 +379,27 @@ module Luggage
         div.container do
           uploader
         end
+        div.hide do 
+          div :class => "modal hide fade" do
+            div :class => "modal-header" do
+              a :href => "#", :class => "close" do
+                "&times;"
+              end
+              h3 "Remove this file?"
+            end
+            div :class => "modal-body" do
+              "Are you sure you want to remove this file? It will be removed completey from the system."
+            end
+            div :class => "modal-footer" do
+              a :href => "#", :class => "confirm_button btn primary" do
+                "Remove"
+              end
+              a :href => "#", :class => "cancel_button btn secondary" do
+                "Cancel"
+              end
+            end
+          end
+        end
       end
       div.container do
         list_files
@@ -383,7 +417,7 @@ module Luggage
           if error
             div :class => "alert-message error" do
               a.close :href => "#" do
-                "x" 
+                "&times;" 
               end
               p do
                 strong "Oops!"
@@ -424,19 +458,43 @@ module Luggage
       i = 0
       page = @page
       if @files.empty?
-        h2 "Nothing uploaded!"
+        div.row do
+          h1 "Shared files"
+          div.span16 do
+            table :class => "file-list" do
+              thead do
+                tr do
+                  th "File Name"
+                  th "Views", :class => "views"
+                  th "Uploaded On", :class => "uploaded"
+                  if logged_in?
+                    th "Remove", :class => "remove"
+                  end
+                end
+              end
+              tbody do
+                tr do
+                  td "No files are currently available", :style => "text-align:center", :id => "no_files", :colspan => 4 
+                end
+              end
+            end
+          end
+        end
       else
         div.row do
           div :class => "page-header" do
-            h1 "Your previously shared files"
+            h1 "Shared files"
           end
           div.span16 do
             table :class => "file-list" do
               thead do
                 tr do
                   th "File Name"
-                  th "Views"
-                  th "Uploaded On"
+                  th "Views", :class => "views"
+                  th "Uploaded On", :class => "uploaded"
+                  if logged_in?
+                    th "Remove", :class => "remove"
+                  end
                 end
               end
               tbody do
@@ -444,8 +502,15 @@ module Luggage
                   url = R(OpenX, file.key)
                   tr do
                     td { a file.name, :href => url }
-                    td file.views
-                    td file.created_at
+                    td file.views, :class => "views"
+                    td relative_time(file.created_at), :class => "uploaded"
+                    if logged_in?
+                      td :class => "remove" do
+                        a :href => R(RemoveX, file.key), :class => "confirm" do
+                          "&times;"
+                        end
+                      end
+                    end
                   end
                 end
               end
@@ -588,7 +653,7 @@ module Luggage
               a :href => "#", :id => "edit_save", :class => "btn primary" do
                 "Update"
               end
-              a :href => "#", :class => "btn secondary" do
+              a :href => "#", :class => "cancel_button btn secondary" do
                 "Cancel"
               end
             end
@@ -609,6 +674,25 @@ module Luggage
         throw :halt
       end
     end
+
+    #borrowed from http://stackoverflow.com/questions/195740/how-do-you-do-relative-time-in-rails
+    def relative_time(start_time)
+      diff_seconds = Time.now - start_time
+      puts diff_seconds
+      case diff_seconds
+        when 0 .. 59
+          "#{diff_seconds} seconds ago"
+        when 60 .. (3600-1)
+          "#{(diff_seconds/60).round} minutes ago"
+        when 3600 .. (3600*24-1)
+          "#{(diff_seconds/3600).round} hours ago"
+        when (3600*24) .. (3600*24*30) 
+          "#{(diff_seconds/(3600*24)).round} days ago"
+        else
+          start_time.strftime("%m/%d/%Y")
+      end
+    end
+
   end
 
 end
