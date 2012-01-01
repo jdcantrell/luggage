@@ -22,6 +22,10 @@ Here is the quick and dirty way to get going:
 
 `gem install camping-omnibus bcrypt-ruby`
 
+Additionally these are needed for the source and markdown views:
+
+`gem install kramdown albino`
+
 Once you have done that download or clone the luggage repository and
 fire up your vim (or whatever poor excuse for an editor you're using)
 and modify config.yml to any reasonable value you can think of.
@@ -52,22 +56,11 @@ anyone else they will be able to get that username and hash if they can
 read luggage's config file, for whatever that is worth to them. 
 
 #Roadmap
-* Add in base_url config param
-* Add in ./config/config.ru and ./config/unicorn-luggage.rb
-* Make db configurable
-* Fabfile and deploy
-* File.API
-  - progress bar for upload?
-  - handle multiple files - need to have a queue
-  - signify new files
-* Format Uploaded On dates
-* Use prettify.js instead of Albino - if we can optionally load on
-  source pages
-* Finish updating a file on edit
-* Allow users to remove uploaded files
+* prevent csrf (random session token for forms and cookie)
+* Demo branch
+
 * Make site work with javascript off (because it should be easy)
-* Remove query debugging
-* prevent csrf (just a random token on our forms correct?)
+
 * Make user sessions optionally last for a 30days instead of a year?
 * Caching example: http://snippets.dzone.com/posts/show/4988
 * Look into how camping's state works, is it secure enough to store
