@@ -37,12 +37,19 @@ module LuggageDisplays
     #is the one responsible for generating the html based of the
     #handler.
     def generate_html(item)
+      file = get_web_path item.path
       @markaby.p do
-        span "You can download "
-        b "#{item.name} " 
-        a "right here", :href => item.path
-        span "."
-
+        div.container do
+          div.span16 do
+            div :class => "alert-message block-message info" do
+              p :class => "download" do
+                text "You may download #{item.name} " 
+                a "right here", :href => file
+                text "."
+              end
+            end
+          end
+        end
       end
     end
 
@@ -63,7 +70,7 @@ module LuggageDisplays
     HANDLES  = {".jpg" => 1, ".png" => 1, ".gif" => 1}
 
     def generate_html(item)
-      img_src = get_web_path(item.path)
+      img_src = get_web_path item.path
 
       @markaby.div.image do
         img :src => img_src
@@ -73,6 +80,7 @@ module LuggageDisplays
 
   #Source view has two tabs, one for a pretty version of the source and
   #another for the raw text 
+  #Don't really need the second tab when we use prettify, but whatevs
   class Source < Default
     HANDLES  = {".php" => 'php', ".py" => 'python', '.rb' => 'ruby',
       '.html' => 'html', '.css' => 'css', '.js' => "javascript", 
@@ -83,14 +91,6 @@ module LuggageDisplays
       source = File.open(item.path, "r")
       contents = source.read
       source.close
-
-      if not File.exists?("#{$config['upload_path']}/cache/#{item.key}")
-        self.process
-      end
-
-      parsed = File.open("#{$config['upload_path']}/cache/#{item.key}", "r")
-      html = parsed.read
-      parsed.close
 
       ext = item.filetype.sub '.', ''
 
