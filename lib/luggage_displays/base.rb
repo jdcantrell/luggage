@@ -3,9 +3,6 @@ require 'markaby'
 #required for markdown view
 require 'kramdown'
 
-#required for source view
-require 'albino'
-
 module LuggageDisplays
   class Default
     HANDLES = {}
@@ -81,9 +78,53 @@ module LuggageDisplays
       '.html' => 'html', '.css' => 'css', '.js' => "javascript", 
       '.c'=> 'c', '.cpp' => 'cpp'}
 
+    def generate_html(item)
+      #get source text
+      source = File.open(item.path, "r")
+      contents = source.read
+      source.close
+
+      if not File.exists?("#{$config['upload_path']}/cache/#{item.key}")
+        self.process
+      end
+
+      parsed = File.open("#{$config['upload_path']}/cache/#{item.key}", "r")
+      html = parsed.read
+      parsed.close
+
+      ext = item.filetype.sub '.', ''
+
+      @markaby.div.container do
+        link :rel => "stylesheet", :href =>"#{$config['static_url']}/assets/css/prettify.css"
+        ul :class => "tabs view-tabs" do
+          li.active do
+            a item.name, :href => '#output'
+          end
+          li do
+            a "Raw", :href => '#source'
+          end
+        end
+        div :class => "tab-content" do
+          div :id => "output", :class => "active" do
+            pre :class => "prettyprint linenums lang-#{ext}" do
+              contents
+            end
+          end
+          div :id => "source" do
+            pre contents
+          end
+        end
+        script :type => "text/javascript", :src => "#{$config['static_url']}/assets/js/prettify.js" do; end
+      end
+    end
+  end
+
+  #TODO: replace {% highlight python %} tags and use prettify
+  class Markdown < Default
+    HANDLES  = {".md" => 1, ".markdown" => 1}
+
     def parse_contents(contents)
-      syntaxer = Albino.new(contents, Source::HANDLES[@item.filetype])
-      syntaxer.colorize( :O => "linenos=True,bg=light")
+      Kramdown::Document.new(contents).to_html
     end
 
     def process
@@ -114,6 +155,7 @@ module LuggageDisplays
       parsed.close
 
       @markaby.div.container do
+        link :rel => "stylesheet", :href =>"#{$config['static_url']}/assets/css/prettify.css"
         ul :class => "tabs view-tabs" do
           li.active do
             a item.name, :href => '#output'
@@ -130,16 +172,8 @@ module LuggageDisplays
             pre contents
           end
         end
+        script :type => "text/javascript", :src => "#{$config['static_url']}/assets/js/prettify.js" do; end
       end
-    end
-  end
-
-  #TODO: parse {% highlight python %} tags
-  class Markdown < Source
-    HANDLES  = {".md" => 1, ".markdown" => 1}
-
-    def parse_contents(contents)
-      Kramdown::Document.new(contents).to_html
     end
   end
 end
