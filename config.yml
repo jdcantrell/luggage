@@ -13,7 +13,7 @@ upload_path: 'UPLOAD_PATH'
 #the files that have been uploaded and the javascript and css for
 #luggage. This url should mapped to a folder that contains /uploads and
 #/assests for luggage
-static_url: 'STATI_URL'
+static_url: 'STATIC_URL'
 
 
 #Database info
