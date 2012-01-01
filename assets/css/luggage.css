@@ -34,16 +34,30 @@
 #file_api {
   display: none;
 }
+
 .file-api-actions {
   text-align: right;
 }
+
 #drag_area {
-  margin-bottom:2px;
+  margin-bottom: 2px;
 }
+
+.download {
+  padding: 20px 0;
+  font-size: 20px;
+  text-align: center;
+}
+
 .drag-upload {
   text-align: center;
-  font-size:20px;
-  padding:20px 0;
+  font-size: 20px;
+  padding: 20px 0 5px 0;
+}
+
+#upload_status {
+  text-align: center;
+  line-height: 15px;
 }
 
 .remove {
