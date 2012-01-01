@@ -349,6 +349,9 @@ module Luggage
                   strong "here"
                   text " to upload!"
                 end
+                div :id => "upload_status" do
+                  "Ready to go!"
+                end
               end
               div :class => "file-api-actions" do
                 a "Use regular upload form", :href => "#", :id => "toggle_form"
@@ -676,12 +679,12 @@ module Luggage
     end
 
     #borrowed from http://stackoverflow.com/questions/195740/how-do-you-do-relative-time-in-rails
+    #added .round so the numbers are nice
     def relative_time(start_time)
       diff_seconds = Time.now - start_time
-      puts diff_seconds
       case diff_seconds
         when 0 .. 59
-          "#{diff_seconds} seconds ago"
+          "#{diff_seconds.round} seconds ago"
         when 60 .. (3600-1)
           "#{(diff_seconds/60).round} minutes ago"
         when 3600 .. (3600*24-1)
