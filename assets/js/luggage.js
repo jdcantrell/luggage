@@ -38,21 +38,21 @@ $(function () {
   });
 
   //Index page code
-  
+
   //generic confirmation code
   $('a.confirm').bind('click', function (event) {
-    $('.confirm_button').attr('href', this.href)
+    $('.confirm_button').attr('href', this.href);
     $('.confirm_button').parents('.modal').modal({backdrop: true, keyboard: true, show:true});
     event.preventDefault();
   });
 
   $('.cancel_button').click(function () {
     $(this).parents('.modal').modal('hide');
-  })
-  
+  });
+
   //file api code
   if (typeof FileReader === "function") {
-    
+
     $('#toggle_form').bind('click', function () {
       $('#file_api').hide();
       $('#fallback').show();
@@ -78,11 +78,11 @@ $(function () {
         $(this).addClass('info');
         $(this).removeClass('success');
         event.preventDefault();
-        var originalEvent = event.originalEvent
-        var files = ( originalEvent.files || originalEvent.dataTransfer.files )
+        var originalEvent = event.originalEvent;
+        var files = ( originalEvent.files || originalEvent.dataTransfer.files);
         for (var i = 0; i < files.length; i += 1) {
           //queue objects to be uploaded
-          upload_file(files[i]);
+          uploadFile(files[i]);
         }
       }
     });
@@ -90,44 +90,65 @@ $(function () {
 
 });
 
-//TODO: upload_file probably needs to be a queue object
-//it'll need to handle updating the interface as well as getting a list
-//of files uploaded incase of multiple upload
-function add_file(data) {
-  var rowHTML = '<tr><td><a href="open/{key}">{name}</a></td><td>0</td><td><span class="label success">New!</span> </td><td class="remove"><a href="remove/{key}">&times;</a></td></tr>';
-  var newRow = rowHTML.replace(/{key}/g, data.item.key).replace('{name}', data.item.name)
-  $('.file-list > tbody > tr').first().before(newRow);
-  $('#no_files').parent().remove()
-}
+var uploadFile = function () {
+  var files = [];
+  var uploading = false;
+  var _uploadComplete = function(data) {
+    var rowHTML = '<tr><td><a href="open/{key}">{name}</a></td><td>0</td><td><span class="label success">New!</span> </td><td class="remove"><a href="remove/{key}">&times;</a></td></tr>';
+    var newRow = rowHTML.replace(/\{key\}/g, data.item.key).replace('{name}', data.item.name);
+    $('.file-list > tbody > tr').first().before(newRow);
+    $('#no_files').parent().remove();
 
-function upload_file(file) {
-  //using XHR directly because jquery does not expose the upload
-  //property - works in chrome and FF (IE shouldn't get this code)
-  var xhr = new XMLHttpRequest();
-  
-  xhr.upload.addEventListener("progress", function (e) {
-    if (e.lengthComputable) {
-      var percentage = Math.round((e.loaded * 100) / e.total);
-      //TODO: show progress on ui
+    if (files.length) {
+      var file = files.pop();
+      _beginUpload(file);
     }
-  }, false);
-  
-  xhr.onreadystatechange = function() { 
-   if (xhr.readyState == 4) {
-     if ((xhr.status >= 200 && xhr.status <= 200) || xhr.status == 304) {
-        if (xhr.responseText != "") {
-          var item = $.parseJSON(xhr.responseText)
-          add_file(item);
-        } 
-     } 
-   }
-  }
+    else {
+      uploading = false;
+      $('#upload_status').html('All files uploaded. Ready to go!');
+    }
+  };
 
-  data = new FormData();
-  data.append('upload', file);
-  data.append('json', true);
+  var _beginUpload  = function(file) {
+    //using XHR directly because jquery does not expose the upload
+    //property - works in chrome and FF (IE shouldn't get this code)
+    uploading = true;
+    var xhr = new XMLHttpRequest();
 
-  xhr.open("POST", "upload");
-  xhr.send(data);
-}
+    xhr.upload.addEventListener("progress", function (e) {
+      if (e.lengthComputable) {
+        var percentage = Math.round((e.loaded * 100) / e.total);
+        $('#upload_status').html('Uploading ' + file.name + ' ' + percentage + '% complete.');
+      }
+    }, false);
 
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState == 4) {
+        if ((xhr.status >= 200 && xhr.status <= 200) || xhr.status == 304) {
+          if (xhr.responseText !== "") {
+            var item = $.parseJSON(xhr.responseText);
+            _uploadComplete(item);
+          }
+        }
+      }
+    };
+
+    data = new FormData();
+    data.append('upload', file);
+    data.append('json', true);
+
+    xhr.open("POST", "upload");
+    xhr.send(data);
+  };
+
+  //external methods here
+  return function (file) {
+    if (!files.length && !uploading) {
+      _beginUpload(file);
+    }
+    else {
+      files.push(file);
+    }
+  };
+
+}();
