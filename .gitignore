@@ -1,2 +1,4 @@
 uploads
 .DS_Store
+luggage.db
+*.pyc
