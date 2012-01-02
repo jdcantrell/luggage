@@ -14,7 +14,7 @@ You will need:
 
 Here is the quick and dirty way to get going:
 
-`gem install camping-omnibus bcrypt-ruby kramdown`
+`gem install camping-omnibus rack_csrf bcrypt-ruby kramdown`
 
 Once you have done that download or clone the luggage repository and
 fire up a text editor modify config.yml to any reasonable value you can
