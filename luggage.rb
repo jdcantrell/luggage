@@ -2,6 +2,7 @@
 require 'camping'
 require 'camping/ar'
 require 'camping/session'
+require 'rack/csrf'
 
 #Custom requirements
 require 'bcrypt'
@@ -667,6 +668,13 @@ module Luggage
   end
 
   module Helpers
+    def form(*)
+      super do
+        self << Rack::Csrf.tag(@env)
+        yield
+      end
+    end
+
     def logged_in?
       !!@state.user_id
     end

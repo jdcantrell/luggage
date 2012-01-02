@@ -61,7 +61,6 @@ Some of this code may not be 100% awesome. But it works, which is 100%
 awesome.
 
 #Roadmap
-* prevent csrf (random session token for forms and cookie)
 * Enhance syntax colors
 * Demo branch
 
