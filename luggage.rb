@@ -9,7 +9,7 @@ require 'fileutils'
 require 'yaml'
 
 #Here are our custom displays
-require './lib/luggage_displays/base'
+require './views/base'
 
 #require 'logger'
 #ActiveRecord::Base.logger = Logger.new(STDOUT)
