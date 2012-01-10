@@ -165,9 +165,7 @@ module LuggageDisplays
           end
         end
         div :class => "tab-content" do
-          div :id => "output", :class => "active" do
-            html
-          end
+          div html, :id => "output", :class => "active"
           div :id => "source" do
             pre contents
           end
