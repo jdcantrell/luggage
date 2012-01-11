@@ -106,9 +106,7 @@ module LuggageDisplays
         end
         div :class => "tab-content" do
           div :id => "output", :class => "active" do
-            pre :class => "prettyprint linenums lang-#{ext}" do
-              contents
-            end
+            pre contents, :class => "prettyprint linenums lang-#{ext}"
           end
           div :id => "source" do
             pre contents
@@ -165,7 +163,9 @@ module LuggageDisplays
           end
         end
         div :class => "tab-content" do
-          div html, :id => "output", :class => "active"
+          div :id => "output", :class => "active" do
+            html
+          end
           div :id => "source" do
             pre contents
           end
