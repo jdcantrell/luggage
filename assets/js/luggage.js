@@ -1,5 +1,5 @@
 $(function () {
-  //This code is for /open/file
+  //This code is for /view/file
   $('.image img').bind('click', function () {
     $(this).toggleClass('full');
   });
@@ -84,7 +84,8 @@ var uploadFile = function () {
   var files = [];
   var uploading = false;
   var _uploadComplete = function(data) {
-    var rowHTML = '<tr><td><a href="open/{key}">{name}</a></td><td>0</td><td><span class="label success">New!</span> </td><td class="remove"><a href="remove/{key}">&times;</a></td></tr>';
+    console.log('here');
+    var rowHTML = '<tr><td><a href="view/{key}">{name}</a></td><td>0</td><td><span class="label label-success">New!</span> </td><td class="remove"><a href="/remove/{key}" class="confirm" data-target="#confirm_remove" data-toggle="modal"><span class="icon-remove"></span></a></td></tr>';
     var newRow = rowHTML.replace(/\{key\}/g, data.item.key).replace('{name}', data.item.name);
     $('.file-list > tbody > tr').first().before(newRow);
     $('#no_files').parent().remove();
@@ -127,6 +128,7 @@ var uploadFile = function () {
         if ((xhr.status >= 200 && xhr.status <= 200) || xhr.status == 304) {
           if (xhr.responseText !== "") {
             var item = $.parseJSON(xhr.responseText);
+            console.log('here');
             _uploadComplete(item);
           }
         }
