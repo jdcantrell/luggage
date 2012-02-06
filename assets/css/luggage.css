@@ -60,7 +60,7 @@
   line-height: 15px;
 }
 
-.remove {
+th.remove, td.remove {
   text-align: center;
   width: 70px;
 }
