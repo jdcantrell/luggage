@@ -40,8 +40,8 @@ module LuggageDisplays
       file = get_web_path item.path
       @markaby.p do
         div.container do
-          div.span16 do
-            div :class => "alert-message block-message info" do
+          div.span12 do
+            div :class => "alert alert-block alert-info" do
               p :class => "download" do
                 text "You may download #{item.name} " 
                 a "right here", :href => file
@@ -96,19 +96,19 @@ module LuggageDisplays
 
       @markaby.div.container do
         link :rel => "stylesheet", :href =>"#{$config['static_url']}/assets/css/prettify.css"
-        ul :class => "tabs view-tabs" do
+        ul :class => "nav nav-tabs" do
           li.active do
-            a item.name, :href => '#output'
+            a item.name, :href => '#output', "data-toggle" => "tab"
           end
           li do
-            a "Raw", :href => '#source'
+            a "Raw", :href => '#source', "data-toggle" => "tab" 
           end
         end
         div :class => "tab-content" do
-          div :id => "output", :class => "active" do
+          div :id => "output", :class => "tab-pane active" do
             pre contents, :class => "prettyprint linenums lang-#{ext}"
           end
-          div :id => "source" do
+          div :id => "source", :class => "tab-pane"  do
             pre contents
           end
         end
@@ -154,19 +154,19 @@ module LuggageDisplays
 
       @markaby.div.container do
         link :rel => "stylesheet", :href =>"#{$config['static_url']}/assets/css/prettify.css"
-        ul :class => "tabs view-tabs" do
+        ul :class => "nav nav-tabs" do
           li.active do
-            a item.name, :href => '#output'
+            a item.name, :href => '#output', "data-toggle" => "tab"
           end
           li do
-            a "Source", :href => '#source'
+            a "Source", :href => '#source', "data-toggle" => "tab"
           end
         end
         div :class => "tab-content" do
-          div :id => "output", :class => "active" do
+          div :id => "output", :class => "tab-pane active" do
             html
           end
-          div :id => "source" do
+          div :id => "source", :class => "tab-pane" do
             pre contents
           end
         end

@@ -16,7 +16,7 @@ require './views/base'
 #ActiveRecord::Base.logger = Logger.new(STDOUT)
 
 Camping.goes :Luggage
-
+Markaby::Builder.set(:auto_validation, false)
 $config = YAML::load_file('config.yml') 
 
 module Luggage
@@ -284,32 +284,29 @@ module Luggage
   end
 
   module Views
+    @auto_validation = false
     def layout
       assets_url = "#{$config['static_url']}/assets"
       text '<!DOCTYPE html>'
       html do
         head do
           title { "Luggage" }
-          link :rel => "stylesheet", :href =>"#{assets_url}/css/bootstrap.css"
+          link :rel => "stylesheet", :href =>"#{assets_url}/css/bootstrap.min.css"
           link :rel => "stylesheet", :href =>"#{assets_url}/css/luggage.css"
-          link :rel => "stylesheet", :href =>"#{assets_url}/css/default.css"
         end
         body :style => "padding-top:60px" do
           topbar
           self << yield 
           script :type => "text/javascript", :src => "http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" do; end
-          script :type => "text/javascript", :src => "#{assets_url}/js/bootstrap-modal.js" do; end
-          script :type => "text/javascript", :src => "#{assets_url}/js/bootstrap-tabs.js" do; end
-          script :type => "text/javascript", :src => "#{assets_url}/js/bootstrap-alerts.js" do; end
-          script :type => "text/javascript", :src => "#{assets_url}/js/bootstrap-buttons.js" do; end
+          script :type => "text/javascript", :src => "#{assets_url}/js/bootstrap.min.js" do; end
           script :type => "text/javascript", :src => "#{assets_url}/js/luggage.js" do; end
         end
       end
     end
 
     def topbar
-      div.topbar do
-        div :class => "topbar-inner" do
+      div :class =>"navbar  navbar-fixed-top" do
+        div :class => "navbar-inner" do
           div.container do
             a.brand $config['title'], :href => R(Index)
             ul.nav do
@@ -320,7 +317,7 @@ module Luggage
                 end
               end
             end
-            ul :class => "nav secondary-nav" do
+            ul :class => "nav pull-right" do
               if logged_in?
                 li { a "Log out", :href => R(Logout) }
               else
@@ -339,9 +336,9 @@ module Luggage
             h1 "Share something new"
           end
           form :id => "upload_form", :action => R(Upload), :method => "post", :enctype => "form/multipart" do
-          div.span16 do
+          div.span12 do
             div :id => "file_api" do
-              div :id => "drag_area", :class => "alert-message block-message info" do
+              div :id => "drag_area", :class => "alert alert-block alert-info" do
                 p :class => "drag-upload" do
                   strong "Drag"
                   text " and "
@@ -351,7 +348,17 @@ module Luggage
                   text " to upload!"
                 end
                 div :id => "upload_status" do
-                  "Ready to go!"
+                  div :id=>"upload_status_text" do
+                    "Ready to go!"
+                  end
+                  div :id=>"upload_status_bar", :style=>"display:none", :class => "progress progress-info progress-striped active" do
+                    div.bar :id=>"upload_status_progress", :style=>"width:40%" do
+                      " "
+                    end
+                  end
+                  div :style=>"display:none", :id=>"upload_status_progress_text" do
+                    "Upload in progress"
+                  end
                 end
               end
               div :class => "file-api-actions" do
@@ -383,24 +390,22 @@ module Luggage
         div.container do
           uploader
         end
-        div.hide do 
-          div :class => "modal hide fade" do
-            div :class => "modal-header" do
-              a :href => "#", :class => "close" do
-                "&times;"
-              end
-              h3 "Remove this file?"
+        div :class => "modal fade", :id => "confirm_remove" do
+          div :class => "modal-header" do
+            a :href => "#", :class => "close", "data-dismiss" => "modal" do
+              "&times;"
             end
-            div :class => "modal-body" do
-              "Are you sure you want to remove this file? It will be removed completey from the system."
+            h3 "Remove this file?"
+          end
+          div :class => "modal-body" do
+            "Are you sure you want to remove this file? It will be removed completey from the system."
+          end
+          div :class => "modal-footer" do
+            a :href => "#", :class => "confirm_button btn btn-primary" do
+              "Remove"
             end
-            div :class => "modal-footer" do
-              a :href => "#", :class => "confirm_button btn primary" do
-                "Remove"
-              end
-              a :href => "#", :class => "cancel_button btn secondary" do
-                "Cancel"
-              end
+            a :href => "#", "data-dismiss" => "modal", :class => "cancel_button btn secondary" do
+              "Cancel"
             end
           end
         end
@@ -430,7 +435,7 @@ module Luggage
             end
           end
 
-          div.span16 do
+          div.span12 do
           form :action => R(Login), :method => "post", :enctype => "form/multipart" do
             fieldset do
               div.clearfix do
@@ -464,8 +469,8 @@ module Luggage
       if @files.empty?
         div.row do
           h1 "Shared files"
-          div.span16 do
-            table :class => "file-list" do
+          div.span12 do
+            table :class => "table" do
               thead do
                 tr do
                   th "File Name"
@@ -489,8 +494,8 @@ module Luggage
           div :class => "page-header" do
             h1 "Shared files"
           end
-          div.span16 do
-            table :class => "file-list" do
+          div.span12 do
+            table :class => "table" do
               thead do
                 tr do
                   th "File Name"
@@ -510,8 +515,10 @@ module Luggage
                     td relative_time(file.created_at), :class => "uploaded"
                     if logged_in?
                       td :class => "remove" do
-                        a :href => R(RemoveX, file.key), :class => "confirm" do
-                          "&times;"
+                        a :href => R(RemoveX, file.key), :class => "confirm", "data-target" => "#confirm_remove", "data-toggle" => "modal" do
+                          span :class => "icon-remove" do
+                            " "
+                          end
                         end
                       end
                     end
@@ -630,7 +637,7 @@ module Luggage
           div :class => "page-header" do
             h1 "Update #{@item.name}"
           end
-          div.span16 do
+          div.span12 do
             edit_form true
           end
         end
@@ -642,24 +649,22 @@ module Luggage
         @handlerHTML
       end
       if logged_in?
-        div.hide do 
-          div :class => "modal hide fade", :id => "edit_form" do
-            div :class => "modal-header" do
-              a :href => "#", :class => "close" do
-                "&times;"
-              end
-              h3 "File Settings"
+        div :class => "modal hide fade", :id => "edit_form" do
+          div :class => "modal-header" do
+            a :href => "#", :class => "close", "data-dismiss" => "modal" do
+              "&times;"
             end
-            div :class => "modal-body" do
-              edit_form
+            h3 "File Settings"
+          end
+          div :class => "modal-body" do
+            edit_form
+          end
+          div :class => "modal-footer" do
+            a :href => "#", :id => "edit_save", :class => "btn btn-primary" do
+              "Update"
             end
-            div :class => "modal-footer" do
-              a :href => "#", :id => "edit_save", :class => "btn primary" do
-                "Update"
-              end
-              a :href => "#", :class => "cancel_button btn secondary" do
-                "Cancel"
-              end
+            a :href => "#", :class => "cancel_button btn btn-secondary" do
+              "Cancel"
             end
           end
         end
