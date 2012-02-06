@@ -2,6 +2,6 @@ require 'rack'
 require './luggage'
 Luggage.create
 
-map '/luggage' do
+map '/share' do
   run Luggage
 end
