@@ -144,7 +144,7 @@ module Luggage
         if input.json
           item.to_json
         else
-          redirect OpenX, item.name
+          redirect ViewX, item.name
         end
       end
     end
@@ -235,12 +235,19 @@ module Luggage
 
         item.save
 
-        redirect OpenX, item.key
+        redirect ViewX, item.key
 
       end
     end
 
+    #keeping this around since I've shared a few links with open
     class OpenX
+      def get(key)
+        redirect ViewX, key
+      end
+    end
+
+    class ViewX
       
       def get(key)
         if key.index('.')
@@ -470,7 +477,7 @@ module Luggage
         div.row do
           h1 "Shared files"
           div.span12 do
-            table :class => "table" do
+            table :class => "file-list table" do
               thead do
                 tr do
                   th "File Name"
@@ -495,7 +502,7 @@ module Luggage
             h1 "Shared files"
           end
           div.span12 do
-            table :class => "table" do
+            table :class => "file-list table" do
               thead do
                 tr do
                   th "File Name"
@@ -508,7 +515,7 @@ module Luggage
               end
               tbody do
                 @files.each do |file|
-                  url = R(OpenX, file.key)
+                  url = R(ViewX, file.key)
                   tr do
                     td { a file.name, :href => url }
                     td file.views, :class => "views"
@@ -578,29 +585,29 @@ module Luggage
         end
       end
 
-      form :action => R(EditX, @item.key), :method => 'post' do
+      form :action => R(EditX, @item.key), :method => 'post', :class => "form-horizontal" do
         fieldset do
-          div :class => "clearfix " + name_error do
-            label  "Name", :for => "name"
-            div.input do
+          div :class => "control-group " + name_error do
+            label  "Name", :for => "name", :class => "control-label"
+            div.controls do
               input :class => "xlarge " + name_error, :name => "name", :size => 30, :type => "text", :value => @item.name
               span :class => "help-inline" do
                 @errors['name']
               end
             end
           end
-          div :class => "clearfix " + key_error do
-            label "Short Key", :for => "shortKey" 
-            div.input do
+          div :class => "control-group " + key_error do
+            label "Short Key", :for => "shortKey", :class => "control-label"
+            div.controls do
               input :class => "xlarge " + key_error, :name => "shortKey", :size => 30, :type => "text", :value => @item.key
               span :class => "help-inline" do
                 @errors['shortKey']
               end
             end
           end
-          div.clearfix do
-            label "Handler", :for => "handler" 
-            div.input do
+          div :class => "control-group" do
+            label "Handler", :for => "handler" , :class => "control-label"
+            div.controls do
               select :class => "xlarge", :name => "handler" do
                 classes = LuggageDisplays.constants.collect{ |c| LuggageDisplays.const_get(c) }
                 classes.each do |c|
@@ -620,12 +627,12 @@ module Luggage
           end
         end
         if buttons != nil
-          div.actions do
-            button :class => 'btn secondary' do
+          div :class => "form-actions" do
+            button :class => 'btn btn-secondary' do
               "Cancel"
             end
             text " "
-            input :type=>"submit", :value => "Save Changes", :id => "edit_submit", :class => 'btn primary'
+            input :type=>"submit", :value => "Save Changes", :id => "edit_submit", :class => 'btn btn-primary'
           end
         end
       end
