@@ -4,10 +4,8 @@ $(function () {
     $(this).toggleClass('full');
   });
 
-  $('.view-tabs').tabs();
-
   $('a[href*=edit]').bind('click', function (event) {
-    $('#edit_form').modal({backdrop: true, keyboard: true, show:true});
+    $('#edit_form').modal('show');
     event.preventDefault();
   });
 
@@ -37,22 +35,14 @@ $(function () {
     }
   });
 
-  //Index page code
-
   //generic confirmation code
   $('a.confirm').bind('click', function (event) {
     $('.confirm_button').attr('href', this.href);
-    $('.confirm_button').parents('.modal').modal({backdrop: true, keyboard: true, show:true});
     event.preventDefault();
-  });
-
-  $('.cancel_button').click(function () {
-    $(this).parents('.modal').modal('hide');
   });
 
   //file api code
   if (typeof FileReader === "function") {
-
     $('#toggle_form').bind('click', function () {
       $('#file_api').hide();
       $('#fallback').show();
@@ -105,7 +95,10 @@ var uploadFile = function () {
     }
     else {
       uploading = false;
-      $('#upload_status').html('All files uploaded. Ready to go!');
+      $('#upload_status_text').html('All files uploaded. Ready to go!');
+      $('#upload_status_bar').hide();
+      $('#upload_status_progress_text').hide();
+      $('#upload_status_text').show();
     }
   };
 
@@ -114,11 +107,18 @@ var uploadFile = function () {
     //property - works in chrome and FF (IE shouldn't get this code)
     uploading = true;
     var xhr = new XMLHttpRequest();
+    console.log(files, files.length)
+
+    $('#upload_status_text').hide();
+    $('#upload_status_progress').css("width", 0);
+    $('#upload_status_bar').show();
+    $('#upload_status_progress_text').show();
 
     xhr.upload.addEventListener("progress", function (e) {
       if (e.lengthComputable) {
         var percentage = Math.round((e.loaded * 100) / e.total);
-        $('#upload_status').html('Uploading ' + file.name + ' ' + percentage + '% complete.');
+        $('#upload_status_progress_text').html("Uploading " + file.name + '. ' + files.length + " more queued for upload.");
+        $('#upload_status_progress').css("width", percentage + '%');
       }
     }, false);
 
