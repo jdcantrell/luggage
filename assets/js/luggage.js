@@ -1,3 +1,4 @@
+/*jshint forin:true, noarg:true, noempty:true, eqeqeq:true, bitwise:true, undef:true, curly:true, browser:true, jquery:true, indent:2, maxerr:50 */
 $(function () {
   //This code is for /view/file
   $('.image img').bind('click', function () {
@@ -69,7 +70,7 @@ $(function () {
         $(this).removeClass('success');
         event.preventDefault();
         var originalEvent = event.originalEvent;
-        var files = ( originalEvent.files || originalEvent.dataTransfer.files);
+        var files = (originalEvent.files || originalEvent.dataTransfer.files);
         for (var i = 0; i < files.length; i += 1) {
           //queue objects to be uploaded
           uploadFile(files[i]);
@@ -83,8 +84,7 @@ $(function () {
 var uploadFile = function () {
   var files = [];
   var uploading = false;
-  var _uploadComplete = function(data) {
-    console.log('here');
+  var _uploadComplete = function (data) {
     var rowHTML = '<tr><td><a href="view/{key}">{name}</a></td><td>0</td><td><span class="label label-success">New!</span> </td><td class="remove"><a href="/remove/{key}" class="confirm" data-target="#confirm_remove" data-toggle="modal"><span class="icon-remove"></span></a></td></tr>';
     var newRow = rowHTML.replace(/\{key\}/g, data.item.key).replace('{name}', data.item.name);
     $('.file-list > tbody > tr').first().before(newRow);
@@ -103,12 +103,11 @@ var uploadFile = function () {
     }
   };
 
-  var _beginUpload  = function(file) {
+  var _beginUpload  = function (file) {
     //using XHR directly because jquery does not expose the upload
     //property - works in chrome and FF (IE shouldn't get this code)
     uploading = true;
     var xhr = new XMLHttpRequest();
-    console.log(files, files.length)
 
     $('#upload_status_text').hide();
     $('#upload_status_progress').css("width", 0);
@@ -123,19 +122,18 @@ var uploadFile = function () {
       }
     }, false);
 
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState == 4) {
-        if ((xhr.status >= 200 && xhr.status <= 200) || xhr.status == 304) {
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        if ((xhr.status >= 200 && xhr.status <= 200) || xhr.status === 304) {
           if (xhr.responseText !== "") {
             var item = $.parseJSON(xhr.responseText);
-            console.log('here');
             _uploadComplete(item);
           }
         }
       }
     };
 
-    data = new FormData();
+    var data = new FormData();
     data.append('upload', file);
     data.append('json', true);
 
