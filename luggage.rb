@@ -47,10 +47,15 @@ module Luggage
   module Controllers
     class Index
       def get
-        @files = Item.order('created_at DESC').limit($config['items_per_page'])
-        @count = Item.count()
-        @page = 1
-        render :index
+        if logged_in?
+          @files = Item.order('created_at DESC').limit($config['items_per_page'])
+          @count = Item.count()
+          @page = 1
+          render :index
+        else
+          item = Item.order('created_at DESC').limit(1).first
+          redirect ViewX, item.key
+        end
       end
     end
 
